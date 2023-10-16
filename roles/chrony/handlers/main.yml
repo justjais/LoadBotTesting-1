@@ -1,4 +1,5 @@
-- name: 'chrony: restart chronyd.service'
+---
+- name: "Chrony: restart chronyd.service"
   ansible.builtin.service:
-    name: 'chronyd.service'
-    state: 'restarted'
+    name: chronyd.service
+    state: restarted

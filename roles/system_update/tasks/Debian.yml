@@ -1,7 +1,8 @@
-- name: 'install needrestart'
+---
+- name: Install needrestart
   ansible.builtin.package:
     name:
-      - 'needrestart'
-    state: 'present'
+      - needrestart
+    state: present
   tags:
-    - 'system_update'
+    - system_update

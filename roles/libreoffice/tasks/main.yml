@@ -1,130 +1,129 @@
-- block:
+---
+- tags:
+    - libreoffice
 
-  - name: 'Install libreoffice-core'
-    ansible.builtin.package:
-      name:
-        - 'libreoffice-core'
-        - 'libreoffice-writer'    # convert text documents
-        - 'libreoffice-calc'      # convert spreadsheets
-        - 'libreoffice-impress'   # convert presentations
-        - 'libreoffice-draw'      # convert drawings
-        - 'libreoffice-math'      # convert formulas
-      state: 'present'
+  block:
 
+    - name: Install libreoffice-core
+      ansible.builtin.package:
+        name:
+          - libreoffice-core
+          - libreoffice-writer # convert text documents
+          - libreoffice-calc # convert spreadsheets
+          - libreoffice-impress # convert presentations
+          - libreoffice-draw # convert drawings
+          - libreoffice-math # convert formulas
+        state: present
+
+- when:
+    - libreoffice__client_apache is defined
+    - libreoffice__client_apache
   tags:
-    - 'libreoffice'
+    - libreoffice
+  block:
 
+    - name: Mkdir -p /usr/share/httpd/.config/libreoffice
+      ansible.builtin.file:
+        path: /usr/share/httpd/.config/libreoffice
+        state: directory
 
-- block:
+    - name: Chown -R apache:apache /usr/share/httpd/.config
+      ansible.builtin.file:
+        path: /usr/share/httpd/.config
+        owner: apache
+        group: apache
+        mode: "0o755"
+        recurse: true
 
-  - name: 'mkdir -p /usr/share/httpd/.config/libreoffice'
-    ansible.builtin.file:
-      path: '/usr/share/httpd/.config/libreoffice'
-      state: 'directory'
+    - name: Mkdir -p /usr/share/httpd/.cache
+      ansible.builtin.file:
+        path: /usr/share/httpd/.cache
+        state: directory
+        owner: apache
+        group: apache
+        mode: "0o755"
 
-  - name: 'chown -R apache:apache /usr/share/httpd/.config'
-    ansible.builtin.file:
-      path: '/usr/share/httpd/.config'
-      owner: 'apache'
-      group: 'apache'
-      mode: 0o755
-      recurse: true
+    - name: Create $HOME/.ansible/tmp with a mode of 0700 for module remote_tmp manually
+      ansible.builtin.file:
+        path: "/usr/share/httpd/.ansible/tmp  "
+        state: directory
+        mode: "0700"
+        owner: apache
+        group: apache
 
-  - name: 'mkdir -p /usr/share/httpd/.cache'
-    ansible.builtin.file:
-      path: '/usr/share/httpd/.cache'
-      state: 'directory'
-      owner: 'apache'
-      group: 'apache'
-      mode: 0o755
+    - name: Run LibreOffice under user "apache" once, just to create some subdirectories and files
+      ansible.builtin.command: |-
+        /usr/bin/soffice --headless --convert-to pdf myfile
+      args:
+        creates: /usr/share/httpd/.config/libreoffice/4
+      become_user: apache
 
-  - name: 'Create $HOME/.ansible/tmp with a mode of 0700 for module remote_tmp manually'
-    ansible.builtin.file:
-      path: '/usr/share/httpd/.ansible/tmp  '
-      state: 'directory'
-      mode: '0700'
-      owner: 'apache'
-      group: 'apache'
+    - name: Restorecon -Fvr ...
+      ansible.builtin.command: restorecon -Fvr {{ item }}
+      register: libreoffice__restorecon_libreoffice_result
+      changed_when: libreoffice__restorecon_libreoffice_result["stdout"] | length
+      loop:
+        - /usr/share/httpd/.cache
+        - /usr/share/httpd/.config
 
-  - name: 'Run LibreOffice under user "apache" once, just to create some subdirectories and files'
-    ansible.builtin.command: |-
-      /usr/bin/soffice --headless --convert-to pdf myfile
-    args:
-      creates: '/usr/share/httpd/.config/libreoffice/4'
-    become_user: 'apache'
+    - name: "SELinux custom policy: Allow soffice.bin (via httpd) setattr access on the directory cache"
+      ansible.builtin.copy:
+        dest: /tmp/selinux-sofficebin.te
+        content: |-
+          module selinux-sofficebin 1.0;
 
-  - name: 'restorecon -Fvr ...'
-    ansible.builtin.command: 'restorecon -Fvr {{ item }}'
-    register: 'libreoffice__restorecon_libreoffice_result'
-    changed_when: 'libreoffice__restorecon_libreoffice_result["stdout"] | length'
-    loop:
-      - '/usr/share/httpd/.cache'
-      - '/usr/share/httpd/.config'
+          require {
+              type lib_t;
+              type httpd_t;
+              type usr_t;
+              class file write;
+              class dir setattr;
+          }
 
-  - name: 'SELinux custom policy: Allow soffice.bin (via httpd) setattr access on the directory cache'
-    copy:
-      dest: "/tmp/selinux-sofficebin.te"
-      content: |-
-        module selinux-sofficebin 1.0;
+          #============= httpd_t ==============
+          allow httpd_t lib_t:dir setattr;
 
-        require {
-            type lib_t;
-            type httpd_t;
-            type usr_t;
-            class file write;
-            class dir setattr;
-        }
+          #!!!! WARNING: 'usr_t' is a base type.
+          allow httpd_t usr_t:file write;
 
-        #============= httpd_t ==============
-        allow httpd_t lib_t:dir setattr;
+    - name: "SELinux custom policy: Allow jre/bin/java (via httpd) read access on sys/fs/cgroup"
+      ansible.builtin.copy:
+        dest: /tmp/selinux-java.te
+        content: |-
+          module selinux-java 1.0;
 
-        #!!!! WARNING: 'usr_t' is a base type.
-        allow httpd_t usr_t:file write;
+          require {
+              type cgroup_t;
+              type httpd_t;
+              class file read;
+          }
 
-  - name: 'SELinux custom policy: Allow jre/bin/java (via httpd) read access on sys/fs/cgroup'
-    copy:
-      dest: "/tmp/selinux-java.te"
-      content: |-
-        module selinux-java 1.0;
+          #============= httpd_t ==============
+          allow httpd_t cgroup_t:file read;
 
-        require {
-            type cgroup_t;
-            type httpd_t;
-            class file read;
-        }
+    - name: "SELinux custom policy: checkmodule --mls -m --output policy.mod policy.te"
+      ansible.builtin.command: |-
+        checkmodule --mls -m --output {{ item }}.mod {{ item }}.te
+      args:
+        chdir: /tmp
+      loop:
+        - selinux-sofficebin
+        - selinux-java
 
-        #============= httpd_t ==============
-        allow httpd_t cgroup_t:file read;
+    - name: "SELinux custom policy: semodule_package --outfile policy.pp --module policy.mod"
+      ansible.builtin.command: |-
+        semodule_package --outfile {{ item }}.pp --module {{ item }}.mod
+      args:
+        chdir: /tmp
+      loop:
+        - selinux-sofficebin
+        - selinux-java
 
-  - name: 'SELinux custom policy: checkmodule --mls -m --output policy.mod policy.te'
-    ansible.builtin.command: |-
-      checkmodule --mls -m --output {{ item }}.mod {{ item }}.te
-    args:
-      chdir: '/tmp'
-    loop:
-      - 'selinux-sofficebin'
-      - 'selinux-java'
-
-  - name: 'SELinux custom policy: semodule_package --outfile policy.pp --module policy.mod'
-    ansible.builtin.command: |-
-      semodule_package --outfile {{ item }}.pp --module {{ item }}.mod
-    args:
-      chdir: '/tmp'
-    loop:
-      - 'selinux-sofficebin'
-      - 'selinux-java'
-
-  - name: 'SELinux custom policy: semodule --install policy.pp'
-    ansible.builtin.command: |-
-      semodule --install {{ item }}.pp
-    args:
-      chdir: '/tmp'
-    loop:
-      - 'selinux-sofficebin'
-      - 'selinux-java'
-
-  when:
-    - 'libreoffice__client_apache is defined'
-    - 'libreoffice__client_apache'
-  tags:
-    - 'libreoffice'
+    - name: "SELinux custom policy: semodule --install policy.pp"
+      ansible.builtin.command: |-
+        semodule --install {{ item }}.pp
+      args:
+        chdir: /tmp
+      loop:
+        - selinux-sofficebin
+        - selinux-java

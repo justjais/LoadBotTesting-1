@@ -1,177 +1,174 @@
-- block:
+---
+- tags:
+    - icingaweb2
 
-  - name: 'install icingaweb2 icingaweb2-selinux icingacli'
-    ansible.builtin.package:
-      name:
-        - 'icingaweb2'
-        - 'icingaweb2-selinux'
-        - 'icingacli'
-      state: 'present'
+  block:
 
-  - name: 'usermod -a -G icingaweb2 icinga'
-    ansible.builtin.user:
-      name: 'icinga'
-      groups:
-        - 'icingaweb2'
-      append: true
+    - name: Install icingaweb2 icingaweb2-selinux icingacli
+      ansible.builtin.package:
+        name:
+          - icingaweb2
+          - icingaweb2-selinux
+          - icingacli
+        state: present
 
-  tags:
-    - 'icingaweb2'
+    - name: Usermod -a -G icingaweb2 icinga
+      ansible.builtin.user:
+        name: icinga
+        groups:
+          - icingaweb2
+        append: true
 
+- tags:
+    - icingaweb2
 
-- block:
+  block:
 
-  - name: 'Check if the icingaweb2 tables exist'
-    ansible.builtin.command: >
-      mysql
-      --host={{ icingaweb2__database_host | quote }}
-      --user={{ icingaweb2__database_login.username | quote }}
-      --password={{ icingaweb2__database_login.password | quote }}
-      {{ icingaweb2__database_name | quote }}
-      --skip-column-names
-      --silent
-      --execute="SHOW TABLES LIKE 'icingaweb_user'"
-    register: 'icingaweb2__table_exists_result'
-    check_mode: false # run task even if `--check` is specified
-    changed_when: false # just gathering info, no actual change
+    - name: Check if the icingaweb2 tables exist
+      ansible.builtin.command: >
+        mysql
+        --host={{ icingaweb2__database_host | quote }}
+        --user={{ icingaweb2__database_login.username | quote }}
+        --password={{ icingaweb2__database_login.password | quote }}
+        {{ icingaweb2__database_name | quote }}
+        --skip-column-names
+        --silent
+        --execute="SHOW TABLES LIKE 'icingaweb_user'"
+      register: icingaweb2__table_exists_result
+      check_mode: false # run task even if `--check` is specified
+      changed_when: false # just gathering info, no actual change
 
-  - name: 'Check if the old sql file should be used (icingaweb2 < 2.11.4)'
-    stat:
-      path: '/usr/share/doc/icingaweb2/schema/mysql.schema.sql'
-    register: 'icingaweb2__old_sql_schema_stat_result'
+    - name: Check if the old sql file should be used (icingaweb2 < 2.11.4)
+      ansible.builtin.stat:
+        path: /usr/share/doc/icingaweb2/schema/mysql.schema.sql
+      register: icingaweb2__old_sql_schema_stat_result
 
-  - name: 'import schema for icingaweb2 database (icingaweb2 < 2.11.4)'
-    community.mysql.mysql_db:
-      login_user: "{{ icingaweb2__database_login.username }}"
-      login_password: "{{ icingaweb2__database_login.password }}"
-      login_host: "{{ icingaweb2__database_host }}"
-      login_unix_socket: '{{ (icingaweb2__database_host == "localhost") | ternary("/var/lib/mysql/mysql.sock", omit) }}' # https://github.com/PyMySQL/PyMySQL/issues/509#issuecomment-244072354
-      name: '{{ icingaweb2__database_name }}'
-      state: 'import'
-      target: '/usr/share/doc/icingaweb2/schema/mysql.schema.sql'
-    when:
+    - name: Import schema for icingaweb2 database (icingaweb2 < 2.11.4)
+      community.mysql.mysql_db:
+        login_user: "{{ icingaweb2__database_login.username }}"
+        login_password: "{{ icingaweb2__database_login.password }}"
+        login_host: "{{ icingaweb2__database_host }}"
+        login_unix_socket: '{{ (icingaweb2__database_host == "localhost") | ternary("/var/lib/mysql/mysql.sock", omit) }}' # https://github.com/PyMySQL/PyMySQL/issues/509#issuecomment-244072354
+        name: "{{ icingaweb2__database_name }}"
+        state: import
+        target: /usr/share/doc/icingaweb2/schema/mysql.schema.sql
+      when:
       # this module is not idempotent when state is import, and will import the dump file each time if run more than once. therefore, we check the existence manually before
-      - 'icingaweb2__table_exists_result["stdout"] == ""'
-      - 'icingaweb2__old_sql_schema_stat_result["stat"]["exists"]'
+        - icingaweb2__table_exists_result["stdout"] == ""
+        - icingaweb2__old_sql_schema_stat_result["stat"]["exists"]
 
-  - name: 'import schema for icingaweb2 database (icingaweb2 >= 2.11.4)'
-    community.mysql.mysql_db:
-      login_user: "{{ icingaweb2__database_login.username }}"
-      login_password: "{{ icingaweb2__database_login.password }}"
-      login_host: "{{ icingaweb2__database_host }}"
-      login_unix_socket: '{{ (icingaweb2__database_host == "localhost") | ternary("/var/lib/mysql/mysql.sock", omit) }}' # https://github.com/PyMySQL/PyMySQL/issues/509#issuecomment-244072354
-      name: '{{ icingaweb2__database_name }}'
-      state: 'import'
-      target: '/usr/share/icingaweb2/schema/mysql.schema.sql'
-    when:
+    - name: Import schema for icingaweb2 database (icingaweb2 >= 2.11.4)
+      community.mysql.mysql_db:
+        login_user: "{{ icingaweb2__database_login.username }}"
+        login_password: "{{ icingaweb2__database_login.password }}"
+        login_host: "{{ icingaweb2__database_host }}"
+        login_unix_socket: '{{ (icingaweb2__database_host == "localhost") | ternary("/var/lib/mysql/mysql.sock", omit) }}' # https://github.com/PyMySQL/PyMySQL/issues/509#issuecomment-244072354
+        name: "{{ icingaweb2__database_name }}"
+        state: import
+        target: /usr/share/icingaweb2/schema/mysql.schema.sql
+      when:
       # this module is not idempotent when state is import, and will import the dump file each time if run more than once. therefore, we check the existence manually before
-      - 'icingaweb2__table_exists_result["stdout"] == ""'
-      - 'not icingaweb2__old_sql_schema_stat_result["stat"]["exists"]'
+        - icingaweb2__table_exists_result["stdout"] == ""
+        - not icingaweb2__old_sql_schema_stat_result["stat"]["exists"]
 
-  - name: 'Create directory/etc/icingaweb2/navigation'
-    ansible.builtin.file:
-      path: '/etc/icingaweb2/navigation'
-      state: 'directory'
-      owner: 'apache'
-      group: 'icingaweb2'
-      mode: 0o2770
+    - name: Create directory/etc/icingaweb2/navigation
+      ansible.builtin.file:
+        path: /etc/icingaweb2/navigation
+        state: directory
+        owner: apache
+        group: icingaweb2
+        mode: "0o2770"
 
-  - name: 'Deploy config files to /etc/icingaweb2/'
-    ansible.builtin.template:
-      src: 'etc/icingaweb2/{{ item }}.j2'
-      dest: "/etc/icingaweb2/{{ item }}"
-      owner: 'apache'
-      group: 'icingaweb2'
-      mode: 0o660
-    loop:
-      - 'authentication.ini'
-      - 'config.ini'
-      - 'resources.ini'
-      - 'groups.ini'
+    - name: Deploy config files to /etc/icingaweb2/
+      ansible.builtin.template:
+        src: etc/icingaweb2/{{ item }}.j2
+        dest: /etc/icingaweb2/{{ item }}
+        owner: apache
+        group: icingaweb2
+        mode: "0o660"
+      loop:
+        - authentication.ini
+        - config.ini
+        - resources.ini
+        - groups.ini
 
-  - name: 'Deploy /etc/icingaweb2/navigation/menu.ini'
-    ansible.builtin.template:
-      src: 'etc/icingaweb2/navigation/menu.ini.j2'
-      dest: '/etc/icingaweb2/navigation/menu.ini'
-      owner: 'apache'
-      group: 'icingaweb2'
-      mode: 0o660
+    - name: Deploy /etc/icingaweb2/navigation/menu.ini
+      ansible.builtin.template:
+        src: etc/icingaweb2/navigation/menu.ini.j2
+        dest: /etc/icingaweb2/navigation/menu.ini
+        owner: apache
+        group: icingaweb2
+        mode: "0o660"
 
-  - name: 'chmod g+rws /etc/icingaweb2/enabledModules'
-    ansible.builtin.file:
-      path: '/etc/icingaweb2/enabledModules'
-      state: 'directory'
-      owner: 'apache'
-      group: 'icingaweb2'
-      mode: 0o2770
+    - name: Chmod g+rws /etc/icingaweb2/enabledModules
+      ansible.builtin.file:
+        path: /etc/icingaweb2/enabledModules
+        state: directory
+        owner: apache
+        group: icingaweb2
+        mode: "0o2770"
 
-  tags:
-    - 'icingaweb2'
+- tags:
+    - icingaweb2
+    - icingaweb2:user
 
+  block:
 
-- block:
+    - name: Deploy /etc/icingaweb2/roles.ini
+      ansible.builtin.template:
+        src: etc/icingaweb2/roles.ini.j2
+        dest: /etc/icingaweb2/roles.ini
+        owner: apache
+        group: icingaweb2
+        mode: "0o660"
 
-  - name: 'Deploy /etc/icingaweb2/roles.ini'
-    ansible.builtin.template:
-      src: 'etc/icingaweb2/roles.ini.j2'
-      dest: '/etc/icingaweb2/roles.ini'
-      owner: 'apache'
-      group: 'icingaweb2'
-      mode: 0o660
-
-  - name: 'add users into the icingaweb2 database (insert only, no update)'
-    ansible.builtin.shell: >
-      mysql
-      --host={{ icingaweb2__database_host | quote }}
-      --user={{ icingaweb2__database_login.username | quote }}
-      --password={{ icingaweb2__database_login.password | quote }}
-      {{ icingaweb2__database_name | quote }}
-      --execute="
-        INSERT INTO icingaweb_user
-        (name, active, password_hash)
-        VALUES ('{{ item.username }}', 1, '$(php -r 'echo password_hash("{{ item.password }}", PASSWORD_DEFAULT);')')
-      ;"
-    when:
-      - 'item["state"] | d("present") != "absent"'
-    loop: "{{ icingaweb2__users__combined_var }}"
-    register: 'icingaweb2__mysql_user_insert_result'
-    changed_when: "'error 1062 (23000)' not in icingaweb2__mysql_user_insert_result.stderr | lower"
-    failed_when: "icingaweb2__mysql_user_insert_result.rc != 0 and 'error 1062 (23000)' not in icingaweb2__mysql_user_insert_result.stderr | lower"
+    - name: Add users into the icingaweb2 database (insert only, no update)
+      ansible.builtin.shell: >
+        mysql
+        --host={{ icingaweb2__database_host | quote }}
+        --user={{ icingaweb2__database_login.username | quote }}
+        --password={{ icingaweb2__database_login.password | quote }}
+        {{ icingaweb2__database_name | quote }}
+        --execute="
+          INSERT INTO icingaweb_user
+          (name, active, password_hash)
+          VALUES ('{{ item.username }}', 1, '$(php -r 'echo password_hash("{{ item.password }}", PASSWORD_DEFAULT);')')
+        ;"
+      when:
+        - item["state"] | d("present") != "absent"
+      loop: "{{ icingaweb2__users__combined_var }}"
+      register: icingaweb2__mysql_user_insert_result
+      changed_when: "'error 1062 (23000)' not in icingaweb2__mysql_user_insert_result.stderr | lower"
+      failed_when: icingaweb2__mysql_user_insert_result.rc != 0 and 'error 1062 (23000)' not in icingaweb2__mysql_user_insert_result.stderr | lower
     # https://stackoverflow.com/questions/25981863/using-failed-when-on-a-with-items-task-depending-on-return-codes
 
-  - name: 'remove users from the icingaweb2 database'
-    community.mysql.mysql_query:
-      login_user: '{{ icingaweb2__database_login["username"] }}'
-      login_password: '{{ icingaweb2__database_login["password"] }}'
-      login_host: '{{ icingaweb2__database_host }}'
-      login_unix_socket: '{{ (icingaweb2__database_host == "localhost") | ternary("/var/lib/mysql/mysql.sock", omit) }}' # https://github.com/pymysql/pymysql/issues/509#issuecomment-244072354
-      login_db: '{{ icingaweb2__database_name }}'
-      query: 'DELETE FROM icingaweb_user WHERE name = "{{ item["username"] }}"'
-    when:
-      - 'item["state"] | d("present") == "absent"'
-    loop: "{{ icingaweb2__users__combined_var }}"
+    - name: Remove users from the icingaweb2 database
+      community.mysql.mysql_query:
+        login_user: '{{ icingaweb2__database_login["username"] }}'
+        login_password: '{{ icingaweb2__database_login["password"] }}'
+        login_host: "{{ icingaweb2__database_host }}"
+        login_unix_socket: '{{ (icingaweb2__database_host == "localhost") | ternary("/var/lib/mysql/mysql.sock", omit) }}' # https://github.com/pymysql/pymysql/issues/509#issuecomment-244072354
+        login_db: "{{ icingaweb2__database_name }}"
+        query: DELETE FROM icingaweb_user WHERE name = "{{ item["username"] }}"
+      when:
+        - item["state"] | d("present") == "absent"
+      loop: "{{ icingaweb2__users__combined_var }}"
 
-  tags:
-    - 'icingaweb2'
-    - 'icingaweb2:user'
+- tags:
+    - icingaweb2
+    - icingaweb2:icons
+  block:
 
+    - name: Download the linuxfabrik icon assets
+      ansible.builtin.get_url:
+        url: https://download.linuxfabrik.ch/monitoring-plugins/icons/icons.tar.gz
+        dest: /tmp/ansible.assets-icons.tar.gz
+      delegate_to: localhost
+      check_mode: false # run task even if `--check` is specified
+      changed_when: false # just gathering info, no actual change
 
-- block:
-
-  - name: 'download the linuxfabrik icon assets'
-    ansible.builtin.get_url:
-      url: 'https://download.linuxfabrik.ch/monitoring-plugins/icons/icons.tar.gz'
-      dest: '/tmp/ansible.assets-icons.tar.gz'
-    delegate_to: 'localhost'
-    check_mode: false # run task even if `--check` is specified
-    changed_when: false # just gathering info, no actual change
-
-  - name: 'Unarchive /tmp/ansible.assets-icons.tar.gz'
-    ansible.builtin.unarchive:
-      src: '/tmp/ansible.assets-icons.tar.gz'
-      dest: '/usr/share/icingaweb2/public/img/icons/'
-      remote_src: false
-
-  tags:
-    - 'icingaweb2'
-    - 'icingaweb2:icons'
+    - name: Unarchive /tmp/ansible.assets-icons.tar.gz
+      ansible.builtin.unarchive:
+        src: /tmp/ansible.assets-icons.tar.gz
+        dest: /usr/share/icingaweb2/public/img/icons/
+        remote_src: false

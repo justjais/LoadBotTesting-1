@@ -1,58 +1,56 @@
-- block:
+---
+- tags:
+    - selinux
+    - selinux:setenforce
 
-  - name: 'setenforce {{ selinux__state }}'
-    ansible.posix.selinux:
-      policy: 'targeted'
-      state: '{{ selinux__state }}'
+  block:
 
-  tags:
-    - 'selinux'
-    - 'selinux:setenforce'
+    - name: Setenforce {{ selinux__state }}
+      ansible.posix.selinux:
+        policy: targeted
+        state: "{{ selinux__state }}"
 
+- tags:
+    - selinux
+    - selinux:setsebool
 
-- block:
+  block:
 
-  - name: 'setsebool -P ...'
-    ansible.posix.seboolean:
-      name: '{{ item.key }}'
-      state: '{{ item.value }}'
-      persistent: true
-      ignore_selinux_state: true
-    loop: '{{ selinux__booleans__combined_var }}'
-    when: 'selinux__state != "disabled"'
+    - name: Setsebool -P ...
+      ansible.posix.seboolean:
+        name: "{{ item.key }}"
+        state: "{{ item.value }}"
+        persistent: true
+        ignore_selinux_state: true
+      loop: "{{ selinux__booleans__combined_var }}"
+      when: selinux__state != "disabled"
 
-  tags:
-    - 'selinux'
-    - 'selinux:setsebool'
+- tags:
+    - selinux
+    - selinux:fcontext
 
+  block:
 
-- block:
+    - name: Semanage fcontext --add --type ...
+      community.general.sefcontext:
+        setype: '{{ item["setype"] }}'
+        target: '{{ item["target"] }}'
+        state: '{{ item["state"] | d("present") }}'
+        ignore_selinux_state: true
+      loop: "{{ selinux__fcontexts__combined_var }}"
+      when: selinux__state != "disabled"
 
-  - name: 'semanage fcontext --add --type ...'
-    community.general.sefcontext:
-      setype: '{{ item["setype"] }}'
-      target: '{{ item["target"] }}'
-      state: '{{ item["state"] | d("present") }}'
-      ignore_selinux_state: true
-    loop: '{{ selinux__fcontexts__combined_var }}'
-    when: 'selinux__state != "disabled"'
+- tags:
+    - selinux
+    - selinux:port
+  block:
 
-  tags:
-    - 'selinux'
-    - 'selinux:fcontext'
-
-- block:
-
-  - name: 'semanage port --add --type ... --proto ...'
-    community.general.seport:
-      setype: '{{ item["setype"] }}'
-      ports: '{{ item["ports"] }}'
-      proto: '{{ item["proto"] | d("tcp") }}'
-      state: '{{ item["state"] | d("present") }}'
-      ignore_selinux_state: true
-    loop: '{{ selinux__ports__combined_var }}'
-    when: 'selinux__state != "disabled"'
-
-  tags:
-    - 'selinux'
-    - 'selinux:port'
+    - name: Semanage port --add --type ... --proto ...
+      community.general.seport:
+        setype: '{{ item["setype"] }}'
+        ports: '{{ item["ports"] }}'
+        proto: '{{ item["proto"] | d("tcp") }}'
+        state: '{{ item["state"] | d("present") }}'
+        ignore_selinux_state: true
+      loop: "{{ selinux__ports__combined_var }}"
+      when: selinux__state != "disabled"

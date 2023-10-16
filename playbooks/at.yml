@@ -1,7 +1,7 @@
-- name: 'Install at'
+---
+- name: Install at
   hosts:
-    - 'lfops_at'
+    - lfops_at
 
   roles:
-
-    - role: 'linuxfabrik.lfops.at'
+    - role: linuxfabrik.lfops.at

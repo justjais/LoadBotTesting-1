@@ -1,1 +1,2 @@
-icingaweb2_module_vspheredb__resource: 'vSphereDB'
+---
+icingaweb2_module_vspheredb__resource: vSphereDB

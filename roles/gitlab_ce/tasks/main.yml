@@ -1,78 +1,77 @@
-- block:
+---
+- tags:
+    - gitlab_ce
 
-  - name: 'install gitlab-ce'
-    ansible.builtin.package:
-      name: 'gitlab-ce'
-      state: 'present'
-    environment:
-      EXTERNAL_URL: '{{ gitlab_ce__rb_external_url }}'
-    when: 'not (gitlab_ce__version is defined and gitlab_ce__version | length)'
+  block:
 
-  - name: 'install gitlab-ce-{{ gitlab_ce__version }}'
-    ansible.builtin.package:
-      name: 'gitlab-ce-{{ gitlab_ce__version }}'
-      state: 'present'
-    environment:
-      EXTERNAL_URL: '{{ gitlab_ce__rb_external_url }}'
-    when: 'gitlab_ce__version is defined and gitlab_ce__version | length'
+    - name: Install gitlab-ce
+      ansible.builtin.package:
+        name: gitlab-ce
+        state: present
+      environment:
+        EXTERNAL_URL: "{{ gitlab_ce__rb_external_url }}"
+      when: not (gitlab_ce__version is defined and gitlab_ce__version | length)
 
-  tags:
-    - 'gitlab_ce'
+    - name: Install gitlab-ce-{{ gitlab_ce__version }}
+      ansible.builtin.package:
+        name: gitlab-ce-{{ gitlab_ce__version }}
+        state: present
+      environment:
+        EXTERNAL_URL: "{{ gitlab_ce__rb_external_url }}"
+      when: gitlab_ce__version is defined and gitlab_ce__version | length
 
+- tags:
+    - gitlab_ce
+    - gitlab_ce:configure
+  block:
 
-- block:
+    - name: Mkdir -p /backup/gitlab
+      ansible.builtin.file:
+        path: /backup/gitlab
+        state: directory
+        owner: git
+        group: root
+        mode: "0o700"
 
-  - name: 'mkdir -p /backup/gitlab'
-    ansible.builtin.file:
-      path: '/backup/gitlab'
-      state: 'directory'
-      owner: 'git'
-      group: 'root'
-      mode: 0o700
+    - name: Deploy /etc/systemd/system/gitlab-dump.service
+      ansible.builtin.template:
+        src: etc/systemd/system/gitlab-dump.service.j2
+        dest: /etc/systemd/system/gitlab-dump.service
+        owner: root
+        group: root
+        mode: "0o644"
 
-  - name: 'Deploy /etc/systemd/system/gitlab-dump.service'
-    ansible.builtin.template:
-      src: 'etc/systemd/system/gitlab-dump.service.j2'
-      dest: '/etc/systemd/system/gitlab-dump.service'
-      owner: 'root'
-      group: 'root'
-      mode: 0o644
+    - name: Deploy /etc/systemd/system/gitlab-dump.timer
+      ansible.builtin.template:
+        src: etc/systemd/system/gitlab-dump.timer.j2
+        dest: /etc/systemd/system/gitlab-dump.timer
+        owner: root
+        group: root
+        mode: "0o644"
+      register: gitlab_ce___systemd_service_template_result
 
-  - name: 'Deploy /etc/systemd/system/gitlab-dump.timer'
-    ansible.builtin.template:
-      src: 'etc/systemd/system/gitlab-dump.timer.j2'
-      dest: '/etc/systemd/system/gitlab-dump.timer'
-      owner: 'root'
-      group: 'root'
-      mode: 0o644
-    register: 'gitlab_ce___systemd_service_template_result'
+    - name: Systemctl enable gitlab-dump.timer --now
+      ansible.builtin.systemd:
+        name: gitlab-dump.timer
+        state: started
+        enabled: true
+        daemon_reload: "{{ gitlab_ce___systemd_service_template_result is changed }}"
 
-  - name: 'systemctl enable gitlab-dump.timer --now'
-    ansible.builtin.systemd:
-      name: 'gitlab-dump.timer'
-      state: 'started'
-      enabled: true
-      daemon_reload: '{{ gitlab_ce___systemd_service_template_result is changed }}'
+    - name: Deploy /etc/gitlab/gitlab.rb
+      ansible.builtin.template:
+        src: etc/gitlab/gitlab.rb.j2
+        dest: /etc/gitlab/gitlab.rb
+        owner: root
+        group: root
+        mode: "0o600"
+      register: gitlab_ce___gitlab_rb_template_result
 
-  - name: 'Deploy /etc/gitlab/gitlab.rb'
-    ansible.builtin.template:
-      src: 'etc/gitlab/gitlab.rb.j2'
-      dest: '/etc/gitlab/gitlab.rb'
-      owner: 'root'
-      group: 'root'
-      mode: 0o600
-    register: 'gitlab_ce___gitlab_rb_template_result'
+    - name: Gitlab-ctl reconfigure
+      ansible.builtin.command: |-
+        gitlab-ctl reconfigure
+      when: gitlab_ce___gitlab_rb_template_result is changed
 
-  - name: 'gitlab-ctl reconfigure'
-    ansible.builtin.command: |-
-      gitlab-ctl reconfigure
-    when: 'gitlab_ce___gitlab_rb_template_result is changed'
-
-  - name: 'gitlab-ctl restart'
-    ansible.builtin.command: |-
-      gitlab-ctl restart
-    when: 'gitlab_ce___gitlab_rb_template_result is changed'
-
-  tags:
-    - 'gitlab_ce'
-    - 'gitlab_ce:configure'
+    - name: Gitlab-ctl restart
+      ansible.builtin.command: |-
+        gitlab-ctl restart
+      when: gitlab_ce___gitlab_rb_template_result is changed

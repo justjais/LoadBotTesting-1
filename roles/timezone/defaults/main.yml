@@ -1,1 +1,2 @@
-timezone__timezone: 'Europe/Zurich'
+---
+timezone__timezone: Europe/Zurich

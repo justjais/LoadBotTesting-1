@@ -1,3 +1,4 @@
+---
 coturn__allowed_peer_ip:
   - '{{ ansible_facts["default_ipv4"]["address"] }}'
 

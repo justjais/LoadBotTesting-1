@@ -1,3 +1,4 @@
-- ansible.builtin.import_playbook: 'exoscale_vm.yml'
-- ansible.builtin.import_playbook: 'hetzner_vm.yml'
-- ansible.builtin.import_playbook: 'infomaniak_vm.yml'
+---
+- ansible.builtin.import_playbook: exoscale_vm.yml
+- ansible.builtin.import_playbook: hetzner_vm.yml
+- ansible.builtin.import_playbook: infomaniak_vm.yml

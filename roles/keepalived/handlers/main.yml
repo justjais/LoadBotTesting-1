@@ -1,4 +1,5 @@
-- name: 'keepalived: restart keepalived'
+---
+- name: "Keepalived: restart keepalived"
   ansible.builtin.systemd:
-    name: 'keepalived'
-    state: 'restarted'
+    name: keepalived
+    state: restarted

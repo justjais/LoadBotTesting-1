@@ -1,157 +1,148 @@
-- name: 'Set platform/version specific variables'
+---
+- name: Set platform/version specific variables
   ansible.builtin.import_role:
-    name: 'shared'
-    tasks_from: 'platform-variables.yml'
+    name: shared
+    tasks_from: platform-variables.yml
   tags:
-    - 'apache_httpd'
-    - 'apache_httpd:config'
-    - 'apache_httpd:mod_security_coreruleset'
-    - 'apache_httpd:mods'
-    - 'apache_httpd:state'
-    - 'apache_httpd:vhosts'
-
+    - apache_httpd
+    - apache_httpd:config
+    - apache_httpd:mod_security_coreruleset
+    - apache_httpd:mods
+    - apache_httpd:state
+    - apache_httpd:vhosts
 
 # Manage required system packages (Installation)
-- block:
+- tags:
+    - apache_httpd
 
-  - name: 'Base Packages:'
-    ansible.builtin.debug:
-      var: 'apache_httpd__base_packages'
+  block:
 
-  - name: 'Ensure base packages are in their desired state'
-    ansible.builtin.package:
-      name: '{{ q("flattened", apache_httpd__base_packages) }}'
-      state: 'present'
+    - name: "Base Packages:"
+      ansible.builtin.debug:
+        var: apache_httpd__base_packages
 
-  - name: 'Combined Packages:'
-    ansible.builtin.debug:
-      var: 'apache_httpd__packages__combined_var'
+    - name: Ensure base packages are in their desired state
+      ansible.builtin.package:
+        name: '{{ q("flattened", apache_httpd__base_packages) }}'
+        state: present
 
-  - name: 'Ensure Apache packages/modules are absent'
-    ansible.builtin.package:
-      name: '{{ apache_httpd__packages__combined_var | selectattr("state", "defined") | selectattr("state", "eq", "absent") | map(attribute="name") }}'
-      state: 'absent'
+    - name: "Combined Packages:"
+      ansible.builtin.debug:
+        var: apache_httpd__packages__combined_var
 
-  - name: 'Ensure Apache packages/modules are present'
-    ansible.builtin.package:
-      name: '{{ (apache_httpd__packages__combined_var | selectattr("state", "defined") | selectattr("state", "ne", "absent") | map(attribute="name"))
-          + (apache_httpd__packages__combined_var | selectattr("state", "undefined") | map(attribute="name")) }}'
-      state: 'present'
+    - name: Ensure Apache packages/modules are absent
+      ansible.builtin.package:
+        name: '{{ apache_httpd__packages__combined_var | selectattr("state", "defined") | selectattr("state", "eq", "absent") | map(attribute="name") }}'
+        state: absent
 
-  - name: 'mkdir -p {{ apache_httpd__config_path}}/{conf,mods,sites}-{available,enabled}'
-    ansible.builtin.file:
-      path: '{{ item }}'
-      state: 'directory'
-      owner: 'root'
-      group: 'root'
-      mode: 0o755
-    loop:
-      - '{{ apache_httpd__config_path }}/conf-available'
-      - '{{ apache_httpd__config_path }}/conf-enabled'
-      - '{{ apache_httpd__config_path }}/mods-available'
-      - '{{ apache_httpd__config_path }}/mods-enabled'
-      - '{{ apache_httpd__config_path }}/sites-available'
-      - '{{ apache_httpd__config_path }}/sites-enabled'
+    - name: Ensure Apache packages/modules are present
+      ansible.builtin.package:
+        name: '{{ (apache_httpd__packages__combined_var | selectattr("state", "defined") | selectattr("state", "ne", "absent") | map(attribute="name")) + (apache_httpd__packages__combined_var
+          | selectattr("state", "undefined") | map(attribute="name")) }}'
+        state: present
 
-  tags:
-    - 'apache_httpd'
+    - name: Mkdir -p {{ apache_httpd__config_path}}/{conf,mods,sites}-{available,enabled}
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "0o755"
+      loop:
+        - "{{ apache_httpd__config_path }}/conf-available"
+        - "{{ apache_httpd__config_path }}/conf-enabled"
+        - "{{ apache_httpd__config_path }}/mods-available"
+        - "{{ apache_httpd__config_path }}/mods-enabled"
+        - "{{ apache_httpd__config_path }}/sites-available"
+        - "{{ apache_httpd__config_path }}/sites-enabled"
 
-
-- block:
-
-  - ansible.builtin.include_tasks: 'mod_security_coreruleset.yml'
-  when:
-    - 'not apache_httpd__skip_mod_security_coreruleset'
+- when:
+    - not apache_httpd__skip_mod_security_coreruleset
 
   tags:
-    - 'apache_httpd'
-    - 'apache_httpd:mod_security_coreruleset'
+    - apache_httpd
+    - apache_httpd:mod_security_coreruleset
 
+  # Manage global Apache config
+  block:
 
-# Manage global Apache config
-- block:
+    - ansible.builtin.include_tasks: mod_security_coreruleset.yml
+- tags:
+    - apache_httpd
+    - apache_httpd:config
 
-  - name: 'Create or update global Apache configuration'
-    ansible.builtin.template:
-      src: 'etc/httpd/conf/httpd.conf.j2'
-      dest: '{{ apache_httpd__config_file }}'
-      owner: 'root'
-      group: 'root'
-      mode: 0o644
-    notify:
-      - 'apache_httpd: httpd -t; systemctl reload httpd'
+  block:
 
-  tags:
-    - 'apache_httpd'
-    - 'apache_httpd:config'
+    - name: Create or update global Apache configuration
+      ansible.builtin.template:
+        src: etc/httpd/conf/httpd.conf.j2
+        dest: "{{ apache_httpd__config_file }}"
+        owner: root
+        group: root
+        mode: "0o644"
+      notify:
+        - "apache_httpd: httpd -t; systemctl reload httpd"
 
+- tags:
+    - apache_httpd
+    - apache_httpd:mods
 
-- block:
+  block:
 
-  - ansible.builtin.include_tasks: 'mods.yml'
+    - ansible.builtin.include_tasks: mods.yml
 
-  tags:
-    - 'apache_httpd'
-    - 'apache_httpd:mods'
+- tags:
+    - apache_httpd
+    - apache_httpd:config
 
+  block:
 
-- block:
+    - ansible.builtin.include_tasks: confs.yml
 
-  - ansible.builtin.include_tasks: 'confs.yml'
+- tags:
+    - apache_httpd
+    - apache_httpd:vhosts
 
-  tags:
-    - 'apache_httpd'
-    - 'apache_httpd:config'
+  block:
 
+    - ansible.builtin.include_tasks: vhosts.yml
 
-- block:
+- tags:
+    - apache_httpd
+    - apache_httpd:matomo
 
-  - ansible.builtin.include_tasks: 'vhosts.yml'
+  block:
 
-  tags:
-    - 'apache_httpd'
-    - 'apache_httpd:vhosts'
+    - ansible.builtin.include_tasks: matomo.yml
 
+- tags:
+    - apache_httpd
 
-- block:
+  # Manage Systemd start and enable
+  block:
 
-  - ansible.builtin.include_tasks: 'matomo.yml'
+    - name: "Chmod -R g-w {{ apache_httpd__config_path }} # enhance security a little bit"
+      ansible.builtin.file:
+        path: "{{ apache_httpd__config_path }}"
+        mode: g-w
+        recurse: true
 
-  tags:
-    - 'apache_httpd'
-    - 'apache_httpd:matomo'
+    - name: Chown -R apache:apache {{ apache_httpd__conf_document_root }}
+      ansible.builtin.file:
+        path: "{{ apache_httpd__conf_document_root }}"
+        owner: apache
+        group: apache
+        recurse: true
+      ignore_errors: true
 
+- tags:
+    - apache_httpd
+    - apache_httpd:state
+  block:
 
-- block:
-
-  - name: 'chmod -R g-w {{ apache_httpd__config_path }} # enhance security a little bit'
-    ansible.builtin.file:
-      path: '{{ apache_httpd__config_path }}'
-      mode: 'g-w'
-      recurse: true
-
-  - name: 'chown -R apache:apache {{ apache_httpd__conf_document_root }}'
-    ansible.builtin.file:
-      path: '{{ apache_httpd__conf_document_root }}'
-      owner: 'apache'
-      group: 'apache'
-      recurse: true
-    ignore_errors: true
-
-  tags:
-    - 'apache_httpd'
-
-
-# Manage Systemd start and enable
-- block:
-
-  - name: 'Ensure that httpd service is in a desired state'
-    ansible.builtin.systemd:
-      name: '{{ apache_httpd__service_name }}'
-      enabled: '{{ apache_httpd__systemd_enabled }}'
-      state: '{{ apache_httpd__systemd_state }}'
-    ignore_errors: "{{ ansible_check_mode }}" # ignore errors if `--check` is specified
-
-  tags:
-    - 'apache_httpd'
-    - 'apache_httpd:state'
+    - name: Ensure that httpd service is in a desired state
+      ansible.builtin.systemd:
+        name: "{{ apache_httpd__service_name }}"
+        enabled: "{{ apache_httpd__systemd_enabled }}"
+        state: "{{ apache_httpd__systemd_state }}"
+      ignore_errors: "{{ ansible_check_mode }}" # ignore errors if `--check` is specified

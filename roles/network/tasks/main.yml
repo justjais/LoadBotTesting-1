@@ -1,24 +1,24 @@
-- block:
+---
+- tags:
+    - network
+  block:
 
-  - name: 'Disable route to the ZEROCONF network that is added to the routing table by the network initscripts'
-    ansible.builtin.lineinfile:
-      path: '/etc/sysconfig/network'
-      line: 'NOZEROCONF=yes'
-      state: 'present'
+    - name: Disable route to the ZEROCONF network that is added to the routing table by the network initscripts
+      ansible.builtin.lineinfile:
+        path: /etc/sysconfig/network
+        line: NOZEROCONF=yes
+        state: present
 
-  - name: 'Use fedora.linux_system_roles.network role to configure the network'
-    include_role:
-      name: 'fedora.linux_system_roles.network'
+    - name: Use fedora.linux_system_roles.network role to configure the network
+      ansible.builtin.include_role:
+        name: fedora.linux_system_roles.network
 
-  - name: 'Remove hc-utils # hetzner cloud utilities - they cause problems with NetworkManager'
-    ansible.builtin.package:
-      name:
-        - 'hc-utils'
-      state: 'absent'
-    ignore_errors: true # allow this task to fail, for example due to unconfigured repos
+    - name: "Remove hc-utils # hetzner cloud utilities - they cause problems with NetworkManager"
+      ansible.builtin.package:
+        name:
+          - hc-utils
+        state: absent
+      ignore_errors: true # allow this task to fail, for example due to unconfigured repos
 
-  - ansible.builtin.debug:
-      msg: 'Please restart the network manually if needed (systemctl restart NetworkManager).'
-
-  tags:
-    - 'network'
+    - ansible.builtin.debug:
+        msg: Please restart the network manually if needed (systemctl restart NetworkManager).

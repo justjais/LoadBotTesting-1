@@ -1,12 +1,13 @@
-- name: 'mailto_root: newaliases'
-  ansible.builtin.command: '/usr/bin/newaliases'
-  notify: 'mailto_root: reload postfix'
+---
+- name: "Mailto_root: newaliases"
+  ansible.builtin.command: /usr/bin/newaliases
+  notify: "mailto_root: reload postfix"
 
-- name: 'mailto_root: postmap /etc/postfix/canonical'
-  ansible.builtin.command: '/usr/sbin/postmap /etc/postfix/canonical'
-  notify: 'mailto_root: reload postfix'
+- name: "Mailto_root: postmap /etc/postfix/canonical"
+  ansible.builtin.command: /usr/sbin/postmap /etc/postfix/canonical
+  notify: "mailto_root: reload postfix"
 
-- name: 'mailto_root: reload postfix'
+- name: "Mailto_root: reload postfix"
   ansible.builtin.service:
-    name: 'postfix'
-    state: 'reloaded'
+    name: postfix
+    state: reloaded

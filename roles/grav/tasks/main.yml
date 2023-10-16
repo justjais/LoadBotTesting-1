@@ -1,166 +1,162 @@
-- block:
+---
+- tags:
+    - grav
 
-  - name: 'Install unzip'
-    ansible.builtin.package:
-      name: 'unzip'
-      state: 'present'
+  block:
 
-  - name: 'Test if Grav is already installed'
-    stat:
-      path: '{{ grav__install_dir | quote }}/index.php'
-    register: 'grav__installed'
+    - name: Install unzip
+      ansible.builtin.package:
+        name: unzip
+        state: present
 
-  - name: 'composer create-project getgrav/grav {{ grav__install_dir | quote }}'
-    community.general.composer:
-      command: 'create-project'
-      arguments: 'getgrav/grav {{ grav__install_dir | quote }}'
-      working_dir: '{{ grav__install_dir | quote }}'
-      prefer_dist: true
-    environment:
+    - name: Test if Grav is already installed
+      ansible.builtin.stat:
+        path: "{{ grav__install_dir | quote }}/index.php"
+      register: grav__installed
+
+    - name: Composer create-project getgrav/grav {{ grav__install_dir | quote }}
+      community.general.composer:
+        command: create-project
+        arguments: getgrav/grav {{ grav__install_dir | quote }}
+        working_dir: "{{ grav__install_dir | quote }}"
+        prefer_dist: true
+      environment:
       # https://getcomposer.org/doc/03-cli.md#composer-allow-superuser
-      COMPOSER_ALLOW_SUPERUSER: '1'
-      COMPOSER_NO_INTERACTION: '1'
-    when:
-      - 'not grav__installed.stat.exists'
+        COMPOSER_ALLOW_SUPERUSER: "1"
+        COMPOSER_NO_INTERACTION: "1"
+      when:
+        - not grav__installed.stat.exists
 
+- tags:
+    - grav
+    - grav:cron
+
+  block:
+
+    - name: Deploy /etc/systemd/system/grav-selfupgrade.service
+      ansible.builtin.template:
+        src: etc/systemd/system/grav-selfupgrade.service.j2
+        dest: /etc/systemd/system/grav-selfupgrade.service
+        owner: root
+        group: root
+        mode: "0o644"
+      notify: "grav: systemctl daemon-reload"
+
+    - name: Deploy /etc/systemd/system/grav-selfupgrade.timer
+      ansible.builtin.template:
+        src: etc/systemd/system/grav-selfupgrade.timer.j2
+        dest: /etc/systemd/system/grav-selfupgrade.timer
+        owner: root
+        group: root
+        mode: "0o644"
+      notify: "grav: systemctl daemon-reload"
+
+    - name: Deploy /etc/systemd/system/grav-update.service
+      ansible.builtin.template:
+        src: etc/systemd/system/grav-update.service.j2
+        dest: /etc/systemd/system/grav-update.service
+        owner: root
+        group: root
+        mode: "0o644"
+      notify: "grav: systemctl daemon-reload"
+
+    - name: Deploy /etc/systemd/system/grav-update.timer
+      ansible.builtin.template:
+        src: etc/systemd/system/grav-update.timer.j2
+        dest: /etc/systemd/system/grav-update.timer
+        owner: root
+        group: root
+        mode: "0o644"
+      notify: "grav: systemctl daemon-reload"
+
+- tags:
+    - grav
+    - grav:cron
+    - grav:state
+
+  block:
+
+    - name: Systemctl {{ grav__timer_selfupgrade_enabled | bool | ternary("enable", "disable") }} grav-selfupgrade.timer --now
+      ansible.builtin.systemd:
+        name: grav-selfupgrade.timer
+        state: '{{ grav__timer_selfupgrade_enabled | bool | ternary("started", "stopped") }}'
+        enabled: "{{ grav__timer_selfupgrade_enabled }}"
+
+    - name: Systemctl {{ grav__timer_update_enabled | bool | ternary("enable", "disable") }} grav-update.timer --now
+      ansible.builtin.systemd:
+        name: grav-update.timer
+        state: '{{ grav__timer_update_enabled | bool | ternary("started", "stopped") }}'
+        enabled: "{{ grav__timer_update_enabled }}"
+
+- when:
+    - not grav__skip_admin | d(false)
   tags:
-    - 'grav'
+    - grav
+    - grav:user
 
+  block:
 
-- block:
+    - name: Install the Administration Panel plugin for Grav
+      ansible.builtin.command: |
+        bin/gpm install admin --all-yes
+      args:
+        chdir: "{{ grav__install_dir | quote }}"
 
-  - name: 'Deploy /etc/systemd/system/grav-selfupgrade.service'
-    ansible.builtin.template:
-      src: 'etc/systemd/system/grav-selfupgrade.service.j2'
-      dest: '/etc/systemd/system/grav-selfupgrade.service'
-      owner: 'root'
-      group: 'root'
-      mode: 0o644
-    notify: 'grav: systemctl daemon-reload'
+    - name: Create Grav User Accounts
+      ansible.builtin.command: >-
+        bin/plugin login new-user
+          --user='{{ item['user'] }}'
+          --fullname='{{ item['fullname'] }}'
+          --password='{{ item['password'] }}'
+          --email='{{ item['email'] }}'
+          --permissions={{ item['permissions'] }}
+          --no-interaction
+      args:
+        chdir: "{{ grav__install_dir | quote }}"
+      loop: "{{ grav__users }}"
 
-  - name: 'Deploy /etc/systemd/system/grav-selfupgrade.timer'
-    ansible.builtin.template:
-      src: 'etc/systemd/system/grav-selfupgrade.timer.j2'
-      dest: '/etc/systemd/system/grav-selfupgrade.timer'
-      owner: 'root'
-      group: 'root'
-      mode: 0o644
-    notify: 'grav: systemctl daemon-reload'
-
-  - name: 'Deploy /etc/systemd/system/grav-update.service'
-    ansible.builtin.template:
-      src: 'etc/systemd/system/grav-update.service.j2'
-      dest: '/etc/systemd/system/grav-update.service'
-      owner: 'root'
-      group: 'root'
-      mode: 0o644
-    notify: 'grav: systemctl daemon-reload'
-
-  - name: 'Deploy /etc/systemd/system/grav-update.timer'
-    ansible.builtin.template:
-      src: 'etc/systemd/system/grav-update.timer.j2'
-      dest: '/etc/systemd/system/grav-update.timer'
-      owner: 'root'
-      group: 'root'
-      mode: 0o644
-    notify: 'grav: systemctl daemon-reload'
-
-  tags:
-    - 'grav'
-    - 'grav:cron'
-
-
-- block:
-
-  - name: 'systemctl {{ grav__timer_selfupgrade_enabled | bool | ternary("enable", "disable") }} grav-selfupgrade.timer --now'
-    ansible.builtin.systemd:
-      name: 'grav-selfupgrade.timer'
-      state: '{{ grav__timer_selfupgrade_enabled | bool | ternary("started", "stopped") }}'
-      enabled: '{{ grav__timer_selfupgrade_enabled }}'
-
-  - name: 'systemctl {{ grav__timer_update_enabled | bool | ternary("enable", "disable") }} grav-update.timer --now'
-    ansible.builtin.systemd:
-      name: 'grav-update.timer'
-      state: '{{ grav__timer_update_enabled | bool | ternary("started", "stopped") }}'
-      enabled: '{{ grav__timer_update_enabled }}'
-
-  tags:
-    - 'grav'
-    - 'grav:cron'
-    - 'grav:state'
-
-
-- block:
-
-  - name: 'Install the Administration Panel plugin for Grav'
-    ansible.builtin.command: |
-      bin/gpm install admin --all-yes
-    args:
-      chdir: '{{ grav__install_dir | quote }}'
-
-  - name: 'Create Grav User Accounts'
-    ansible.builtin.command: >-
-      bin/plugin login new-user
-        --user='{{ item['user'] }}'
-        --fullname='{{ item['fullname'] }}'
-        --password='{{ item['password'] }}'
-        --email='{{ item['email'] }}'
-        --permissions={{ item['permissions'] }}
-        --no-interaction
-    args:
-      chdir: '{{ grav__install_dir | quote }}'
-    loop: '{{ grav__users }}'
-
-  when:
-    - 'not grav__skip_admin | d(false)'
-  tags:
-    - 'grav'
-    - 'grav:user'
-
-
-- block:
+- tags:
+    - grav
+  block:
 
     # https://learn.getgrav.org/17/troubleshooting/permissions
 
-  - name: 'chown -R apache:apache {{ grav__install_dir | quote }}'
-    ansible.builtin.file:
-      path: '{{ grav__install_dir | quote }}'
-      owner: 'apache'
-      group: 'apache'
-      recurse: true
+    - name: Chown -R apache:apache {{ grav__install_dir | quote }}
+      ansible.builtin.file:
+        path: "{{ grav__install_dir | quote }}"
+        owner: apache
+        group: apache
+        recurse: true
 
-  - name: 'restorecon -Fvr ...'
-    ansible.builtin.command: 'restorecon -Fvr {{ item }}'
-    register: 'grav__restorecon_grav_result'
-    changed_when: 'grav__restorecon_grav_result["stdout"] | length'
-    loop:
-      - '{{ grav__install_dir }}'
+    - name: Restorecon -Fvr ...
+      ansible.builtin.command: restorecon -Fvr {{ item }}
+      register: grav__restorecon_grav_result
+      changed_when: grav__restorecon_grav_result["stdout"] | length
+      loop:
+        - "{{ grav__install_dir }}"
 
     # todo: "rw" just necessary if using the Grav admin plugin, otherwise "r" would be sufficient
 
-  - name: 'find {{ grav__install_dir | quote }} -type f -exec chmod --changes 664 {} \;'
-    ansible.builtin.command: |
-      find {{ grav__install_dir | quote }} -type f -exec chmod --changes 664 {} \;
-    register: 'grav__chmod_dirs_result'
-    changed_when: 'grav__chmod_dirs_result["stdout"] | length'
+    - name: Find {{ grav__install_dir | quote }} -type f -exec chmod --changes 664 {} \;
+      ansible.builtin.command: |
+        find {{ grav__install_dir | quote }} -type f -exec chmod --changes 664 {} \;
+      register: grav__chmod_dirs_result
+      changed_when: grav__chmod_dirs_result["stdout"] | length
 
-  - name: 'find {{ grav__install_dir | quote }}/bin -type f -exec chmod --changes 775 {} \;'
-    ansible.builtin.command: |
-      find {{ grav__install_dir | quote }}/bin -type f -exec chmod --changes 775 {} \;
-    register: 'grav__chmod_dirs_result'
-    changed_when: 'grav__chmod_dirs_result["stdout"] | length'
+    - name: Find {{ grav__install_dir | quote }}/bin -type f -exec chmod --changes 775 {} \;
+      ansible.builtin.command: |
+        find {{ grav__install_dir | quote }}/bin -type f -exec chmod --changes 775 {} \;
+      register: grav__chmod_dirs_result
+      changed_when: grav__chmod_dirs_result["stdout"] | length
 
-  - name: 'find {{ grav__install_dir | quote }} -type d -exec chmod --changes 775 {} \;'
-    ansible.builtin.command: |
-      find {{ grav__install_dir | quote }} -type d -exec chmod --changes 775 {} \;
-    register: 'grav__chmod_dirs_result'
-    changed_when: 'grav__chmod_dirs_result["stdout"] | length'
+    - name: Find {{ grav__install_dir | quote }} -type d -exec chmod --changes 775 {} \;
+      ansible.builtin.command: |
+        find {{ grav__install_dir | quote }} -type d -exec chmod --changes 775 {} \;
+      register: grav__chmod_dirs_result
+      changed_when: grav__chmod_dirs_result["stdout"] | length
 
-  - name: 'find {{ grav__install_dir | quote }} -type d -exec chmod --changes +s {} \;'
-    ansible.builtin.command: |
-      find {{ grav__install_dir | quote }} -type d -exec chmod --changes +s {} \;
-    register: 'grav__chmod_dirs_result'
-    changed_when: 'grav__chmod_dirs_result["stdout"] | length'
-
-  tags:
-    - 'grav'
+    - name: Find {{ grav__install_dir | quote }} -type d -exec chmod --changes +s {} \;
+      ansible.builtin.command: |
+        find {{ grav__install_dir | quote }} -type d -exec chmod --changes +s {} \;
+      register: grav__chmod_dirs_result
+      changed_when: grav__chmod_dirs_result["stdout"] | length

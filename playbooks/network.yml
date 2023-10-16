@@ -1,7 +1,7 @@
-- name: 'Configures the network settings on the server.'
+---
+- name: Configures the network settings on the server.
   hosts:
-    - 'lfops_network'
+    - lfops_network
 
   roles:
-
-    - role: 'linuxfabrik.lfops.network'
+    - role: linuxfabrik.lfops.network

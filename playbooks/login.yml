@@ -1,7 +1,7 @@
-- name: 'Manage logins'
+---
+- name: Manage logins
   hosts:
-    - 'lfops_login'
+    - lfops_login
 
   roles:
-
-    - role: 'linuxfabrik.lfops.login'
+    - role: linuxfabrik.lfops.login

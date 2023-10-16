@@ -1,6 +1,7 @@
-- name: 'systemd_journald: restart systemd-journald'
+---
+- name: "Systemd_journald: restart systemd-journald"
   ansible.builtin.systemd:
-    name: 'systemd-journald'
-    state: 'restarted'
+    name: systemd-journald
+    state: restarted
   when:
-    - 'systemd_journald__service_state_result is not changed'
+    - systemd_journald__service_state_result is not changed

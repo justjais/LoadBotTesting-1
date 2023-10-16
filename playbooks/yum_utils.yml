@@ -1,7 +1,7 @@
-- name: 'Install yum-utils'
+---
+- name: Install yum-utils
   hosts:
-    - 'lfops_yum_utils'
+    - lfops_yum_utils
 
   roles:
-
-    - role: 'linuxfabrik.lfops.yum_utils'
+    - role: linuxfabrik.lfops.yum_utils

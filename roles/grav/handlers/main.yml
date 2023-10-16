@@ -1,3 +1,4 @@
-- name: 'grav: systemctl daemon-reload'
+---
+- name: "Grav: systemctl daemon-reload"
   ansible.builtin.systemd:
     daemon_reload: true

@@ -1,19 +1,19 @@
-- block:
+---
+- tags:
+    - cloud_init
+  block:
 
-  - name: 'Remove cloud-init'
-    ansible.builtin.package:
-      name: 'cloud-init'
-      state: 'absent'
+    - name: Remove cloud-init
+      ansible.builtin.package:
+        name: cloud-init
+        state: absent
 
-  - name: 'rm /etc/NetworkManager/conf.d/99-cloud-init.conf # this prevents NetworkManager from managing /etc/resolv.conf'
-    ansible.builtin.file:
-      path: '/etc/NetworkManager/conf.d/99-cloud-init.conf'
-      state: 'absent'
+    - name: "Rm /etc/NetworkManager/conf.d/99-cloud-init.conf # this prevents NetworkManager from managing /etc/resolv.conf"
+      ansible.builtin.file:
+        path: /etc/NetworkManager/conf.d/99-cloud-init.conf
+        state: absent
 
-  - name: 'rm /etc/cloud/cloud.cfg.rpmsave'
-    ansible.builtin.file:
-      path: '/etc/cloud/cloud.cfg.rpmsave'
-      state: 'absent'
-
-  tags:
-    - 'cloud_init'
+    - name: Rm /etc/cloud/cloud.cfg.rpmsave
+      ansible.builtin.file:
+        path: /etc/cloud/cloud.cfg.rpmsave
+        state: absent

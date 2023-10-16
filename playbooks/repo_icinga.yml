@@ -1,7 +1,7 @@
-- name: 'Manage and configure the Icinga Package Repository'
+---
+- name: Manage and configure the Icinga Package Repository
   hosts:
-    - 'lfops_repo_icinga'
+    - lfops_repo_icinga
 
   roles:
-
-    - role: 'linuxfabrik.lfops.repo_icinga'
+    - role: linuxfabrik.lfops.repo_icinga

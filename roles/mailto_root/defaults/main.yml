@@ -1,1 +1,2 @@
-mailto_root__from: '{{ postfix__relayhost_username }}'
+---
+mailto_root__from: "{{ postfix__relayhost_username }}"

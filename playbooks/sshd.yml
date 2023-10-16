@@ -1,11 +1,11 @@
-- name: 'Configure sshd'
+---
+- name: Configure sshd
   hosts:
-    - 'lfops_sshd'
+    - lfops_sshd
 
   roles:
-
-    - role: 'linuxfabrik.lfops.policycoreutils'
+    - role: linuxfabrik.lfops.policycoreutils
       when:
-        - 'ansible_facts["os_family"] == "RedHat"'
+        - ansible_facts["os_family"] == "RedHat"
 
-    - role: 'linuxfabrik.lfops.sshd'
+    - role: linuxfabrik.lfops.sshd

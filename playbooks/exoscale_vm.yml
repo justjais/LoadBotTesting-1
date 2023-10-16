@@ -1,8 +1,8 @@
-- name: 'Setup and manage an Exoscale VM'
+---
+- name: Setup and manage an Exoscale VM
   hosts:
-    - 'lfops_exoscale_vm'
+    - lfops_exoscale_vm
   gather_facts: false
 
   roles:
-
-    - role: 'linuxfabrik.lfops.exoscale_vm'
+    - role: linuxfabrik.lfops.exoscale_vm

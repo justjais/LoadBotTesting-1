@@ -1,184 +1,174 @@
-- name: 'The Linuxfabrik basic setup'
+---
+- name: The Linuxfabrik basic setup
   hosts:
-    - 'lfops_setup_basic'
-
+    - lfops_setup_basic
 
   pre_tasks:
-
     # currently, this is thought for centos7, rocky8 and fedora35. therefore, if there is no when-staement, it should work against those.
     # please extend and improve as required.
-    - name: 'Check if the OS is supported'
-      ansible.builtin.meta: 'end_host'
+    - name: Check if the OS is supported
+      ansible.builtin.meta: end_host
       when:
-        - 'ansible_facts["os_family"] != "RedHat"'
+        - ansible_facts["os_family"] != "RedHat"
       tags:
-        - 'always'
-
+        - always
 
   roles:
-
     # we need correct network settings for the rest to work
-    - role: 'linuxfabrik.lfops.network'
+    - role: linuxfabrik.lfops.network
       when:
-        - 'not setup_basic__skip_network | d(false)'
+        - not setup_basic__skip_network | d(false)
 
     # === Basic repositories ===
-    - role: 'linuxfabrik.lfops.repo_baseos'
+    - role: linuxfabrik.lfops.repo_baseos
       when:
-        - '(ansible_facts["distribution"] == "CentOS" and ansible_facts["distribution_major_version"] in ["7", "8"])
-          or (ansible_facts["distribution"] == "Rocky" and ansible_facts["distribution_major_version"] in ["8"])
-          or (ansible_facts["distribution"] == "AlmaLinux" and ansible_facts["distribution_major_version"] in ["8"])'
-        - 'not setup_basic__skip_repo_baseos | d(false)'
+        - (ansible_facts["distribution"] == "CentOS" and ansible_facts["distribution_major_version"] in ["7", "8"]) or (ansible_facts["distribution"] == "Rocky" and
+          ansible_facts["distribution_major_version"] in ["8"]) or (ansible_facts["distribution"] == "AlmaLinux" and ansible_facts["distribution_major_version"] in
+          ["8"])
+        - not setup_basic__skip_repo_baseos | d(false)
 
-    - role: 'linuxfabrik.lfops.repo_epel'
+    - role: linuxfabrik.lfops.repo_epel
       when:
-        - 'ansible_facts["os_family"] == "RedHat" and ansible_facts["distribution_major_version"] in ["7", "8"]'
-        - 'not setup_basic__skip_repo_epel | d(false)'
+        - ansible_facts["os_family"] == "RedHat" and ansible_facts["distribution_major_version"] in ["7", "8"]
+        - not setup_basic__skip_repo_epel | d(false)
 
     # === Security ===
-    - role: 'linuxfabrik.lfops.policycoreutils'
+    - role: linuxfabrik.lfops.policycoreutils
       when:
-        - 'ansible_facts["os_family"] == "RedHat"'
+        - ansible_facts["os_family"] == "RedHat"
 
-    - role: 'linuxfabrik.lfops.selinux'
+    - role: linuxfabrik.lfops.selinux
       when:
-        - 'ansible_facts["os_family"] == "RedHat"'
-        - 'not setup_basic__skip_selinux | d(false)'
+        - ansible_facts["os_family"] == "RedHat"
+        - not setup_basic__skip_selinux | d(false)
 
     # === Sensible defaults ===
-    - role: 'linuxfabrik.lfops.systemd_journald'
+    - role: linuxfabrik.lfops.systemd_journald
       when:
-        - 'not setup_basic__skip_systemd_journald | d(false)'
+        - not setup_basic__skip_systemd_journald | d(false)
 
-    - role: 'linuxfabrik.lfops.hostname'
+    - role: linuxfabrik.lfops.hostname
       when:
-        - 'not setup_basic__skip_hostname | d(false)'
+        - not setup_basic__skip_hostname | d(false)
 
-    - role: 'linuxfabrik.lfops.timezone'
+    - role: linuxfabrik.lfops.timezone
       when:
-        - 'not setup_basic__skip_timezone | d(false)'
+        - not setup_basic__skip_timezone | d(false)
 
-    - role: 'linuxfabrik.lfops.logrotate'
+    - role: linuxfabrik.lfops.logrotate
       when:
-        - 'not setup_basic__skip_logrotate | d(false)'
+        - not setup_basic__skip_logrotate | d(false)
 
-    - role: 'linuxfabrik.lfops.rsyslog'
+    - role: linuxfabrik.lfops.rsyslog
       when:
-        - 'not setup_basic__skip_rsyslog | d(false)'
+        - not setup_basic__skip_rsyslog | d(false)
 
-    - role: 'linuxfabrik.lfops.cloud_init'
+    - role: linuxfabrik.lfops.cloud_init
       when:
-        - 'not setup_basic__skip_cloud_init | d(false)'
+        - not setup_basic__skip_cloud_init | d(false)
 
-    - role: 'linuxfabrik.lfops.cockpit'
+    - role: linuxfabrik.lfops.cockpit
       when:
-        - 'not setup_basic__skip_cockpit | d(false)'
+        - not setup_basic__skip_cockpit | d(false)
 
-    - role: 'linuxfabrik.lfops.dnf_makecache'
+    - role: linuxfabrik.lfops.dnf_makecache
       when:
-        - '(ansible_facts["os_family"] == "RedHat" and ansible_facts["distribution_major_version"] in ["8"])
-          or (ansible_facts["distribution"] == "Fedora")'
-        - 'not setup_basic__skip_dnf_makecache | d(false)'
+        - (ansible_facts["os_family"] == "RedHat" and ansible_facts["distribution_major_version"] in ["8"]) or (ansible_facts["distribution"] == "Fedora")
+        - not setup_basic__skip_dnf_makecache | d(false)
 
-    - role: 'linuxfabrik.lfops.kdump'
+    - role: linuxfabrik.lfops.kdump
       when:
-        - 'not setup_basic__skip_kdump | d(false)'
+        - not setup_basic__skip_kdump | d(false)
 
-    - role: 'linuxfabrik.lfops.chrony'
+    - role: linuxfabrik.lfops.chrony
       when:
-        - 'not setup_basic__skip_chrony | d(false)'
+        - not setup_basic__skip_chrony | d(false)
 
-    - role: 'linuxfabrik.lfops.motd'
+    - role: linuxfabrik.lfops.motd
       when:
-        - 'not setup_basic__skip_motd | d(false)'
+        - not setup_basic__skip_motd | d(false)
 
     # === Various tools / dependencies ===
-    - role: 'linuxfabrik.lfops.python'
+    - role: linuxfabrik.lfops.python
       python__modules__dependent_var:
-        - '{{ monitoring_plugins__python__modules__dependent_var | d([]) }}'
+        - "{{ monitoring_plugins__python__modules__dependent_var | d([]) }}"
       when:
-        - 'not setup_basic__skip_python | d(false)'
+        - not setup_basic__skip_python | d(false)
 
-    - role: 'linuxfabrik.lfops.glances'
+    - role: linuxfabrik.lfops.glances
       when:
-        - 'not setup_basic__skip_glances | d(false)'
+        - not setup_basic__skip_glances | d(false)
 
-    - role: 'linuxfabrik.lfops.tools'
+    - role: linuxfabrik.lfops.tools
       when:
-        - 'not setup_basic__skip_tools | d(false)'
+        - not setup_basic__skip_tools | d(false)
 
-    - role: 'linuxfabrik.lfops.at'
+    - role: linuxfabrik.lfops.at
       when:
-        - 'not setup_basic__skip_at | d(false)'
+        - not setup_basic__skip_at | d(false)
 
-    - role: 'linuxfabrik.lfops.yum_utils'
+    - role: linuxfabrik.lfops.yum_utils
       when:
-        - 'not setup_basic__skip_yum_utils | d(false)'
-
+        - not setup_basic__skip_yum_utils | d(false)
 
     # === SSH ===
     # TODO: does this work with CIS?
-    - role: 'linuxfabrik.lfops.sshd'
+    - role: linuxfabrik.lfops.sshd
       when:
-        - 'ansible_facts["os_family"] == "RedHat" and ansible_facts["distribution_major_version"] in ["7", "8"]'
-        - 'not setup_basic__skip_sshd | d(false)'
+        - ansible_facts["os_family"] == "RedHat" and ansible_facts["distribution_major_version"] in ["7", "8"]
+        - not setup_basic__skip_sshd | d(false)
 
-    - role: 'linuxfabrik.lfops.login'
+    - role: linuxfabrik.lfops.login
       when:
-        - 'not setup_basic__skip_login | d(false)'
-
+        - not setup_basic__skip_login | d(false)
 
     # === Firewalling ===
-    - role: 'linuxfabrik.lfops.firewall'
+    - role: linuxfabrik.lfops.firewall
       when:
-        - 'not setup_basic__skip_firewall | d(false)'
-
+        - not setup_basic__skip_firewall | d(false)
 
     # === Mailing ===
-    - role: 'linuxfabrik.lfops.mailx'
+    - role: linuxfabrik.lfops.mailx
       when:
-        - 'not setup_basic__skip_mailx | d(false)'
+        - not setup_basic__skip_mailx | d(false)
 
-    - role: 'linuxfabrik.lfops.postfix'
+    - role: linuxfabrik.lfops.postfix
       when:
-        - 'not setup_basic__skip_postfix | d(false)'
+        - not setup_basic__skip_postfix | d(false)
 
-    - role: 'linuxfabrik.lfops.mailto_root'
+    - role: linuxfabrik.lfops.mailto_root
       when:
-        - 'not setup_basic__skip_mailto_root | d(false)'
-
+        - not setup_basic__skip_mailto_root | d(false)
 
     # === Automatic updates ===
-    - role: 'linuxfabrik.lfops.system_update'
+    - role: linuxfabrik.lfops.system_update
       when:
-        - 'not setup_basic__skip_system_update | d(false)'
-
+        - not setup_basic__skip_system_update | d(false)
 
     # === Backups ===
-    - role: 'linuxfabrik.lfops.python_venv'
+    - role: linuxfabrik.lfops.python_venv
       python_venv__venvs__dependent_var:
-        - '{{ duplicity__python_venv__venvs__dependent_var | d({}) }}'
+        - "{{ duplicity__python_venv__venvs__dependent_var | d({}) }}"
       when:
-        - 'not setup_basic__skip_python_venv | d(false)'
+        - not setup_basic__skip_python_venv | d(false)
 
-    - role: 'linuxfabrik.lfops.duplicity'
+    - role: linuxfabrik.lfops.duplicity
       when:
-        - 'not setup_basic__skip_duplicity | d(false)'
-
+        - not setup_basic__skip_duplicity | d(false)
 
     # === Monitoring ===
-    - role: 'linuxfabrik.lfops.repo_monitoring_plugins'
+    - role: linuxfabrik.lfops.repo_monitoring_plugins
       when:
-        - 'not setup_basic__skip_repo_monitoring_plugins | d(false)'
+        - not setup_basic__skip_repo_monitoring_plugins | d(false)
 
-    - role: 'linuxfabrik.lfops.monitoring_plugins'
+    - role: linuxfabrik.lfops.monitoring_plugins
       when:
-        - 'not setup_basic__skip_monitoring_plugins | d(false)'
+        - not setup_basic__skip_monitoring_plugins | d(false)
 
-    - role: 'linuxfabrik.lfops.repo_icinga'
+    - role: linuxfabrik.lfops.repo_icinga
       when:
-        - 'not setup_basic__skip_repo_icinga | d(false)'
+        - not setup_basic__skip_repo_icinga | d(false)
 
-    - role: 'linuxfabrik.lfops.icinga2_agent'
+    - role: linuxfabrik.lfops.icinga2_agent
       when:
-        - 'not setup_basic__skip_icinga2_agent | d(false)'
+        - not setup_basic__skip_icinga2_agent | d(false)

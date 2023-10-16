@@ -1,7 +1,7 @@
-- name: 'Installs the Icingaweb2 Doc Module'
+---
+- name: Installs the Icingaweb2 Doc Module
   hosts:
-    - 'lfops_icingaweb2_module_doc'
+    - lfops_icingaweb2_module_doc
 
   roles:
-
-    - role: 'linuxfabrik.lfops.icingaweb2_module_doc'
+    - role: linuxfabrik.lfops.icingaweb2_module_doc

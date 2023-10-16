@@ -1,61 +1,60 @@
-- block:
+---
+- tags:
+    - redis
 
-  - name: 'Install redis'
-    ansible.builtin.package:
-      name: 'redis'
-      state: 'present'
+  block:
 
-  - name: 'Get the list of installed packages'
-    ansible.builtin.package_facts:  # yamllint disable-line rule:empty-values
-    check_mode: false # run task even if `--check` is specified
+    - name: Install redis
+      ansible.builtin.package:
+        name: redis
+        state: present
 
-  - name: 'Get Redis version'
-    ansible.builtin.set_fact:
-      redis__installed_version: '{{ ansible_facts.packages["redis"][0]["version"][:1] }}'
+    - name: Get the list of installed packages
+      ansible.builtin.package_facts: # yamllint disable-line rule:empty-values
+      check_mode: false # run task even if `--check` is specified
 
-  - name: 'Deploy /etc/redis.conf (v{{ redis__installed_version }})'
-    ansible.builtin.template:
-      src: 'etc/{{ redis__installed_version }}-redis.conf.j2'
-      dest: '/etc/redis.conf'
-      owner: 'root'
-      group: 'root'
-      mode: 0o644
-    notify: 'redis: restart redis'
-    when:
-      - 'redis__installed_version in ["5", "6"]'
+    - name: Get Redis version
+      ansible.builtin.set_fact:
+        redis__installed_version: '{{ ansible_facts.packages["redis"][0]["version"][:1] }}'
 
-  - name: 'Deploy /etc/redis/redis.conf (v{{ redis__installed_version }})'
-    ansible.builtin.template:
-      src: 'etc/redis/{{ redis__installed_version }}-redis.conf.j2'
-      dest: '/etc/redis/redis.conf'
-      owner: 'root'
-      group: 'root'
-      mode: 0o644
-    notify: 'redis: restart redis'
-    when:
-      - 'redis__installed_version in ["7"]'
+    - name: Deploy /etc/redis.conf (v{{ redis__installed_version }})
+      ansible.builtin.template:
+        src: etc/{{ redis__installed_version }}-redis.conf.j2
+        dest: /etc/redis.conf
+        owner: root
+        group: root
+        mode: "0o644"
+      notify: "redis: restart redis"
+      when:
+        - redis__installed_version in ["5", "6"]
 
-  - name: 'Deploy /etc/systemd/system/redis.service.d/z00-linuxfabrik.conf.j2'
-    ansible.builtin.template:
-      src: 'etc/systemd/system/redis.service.d/z00-linuxfabrik.conf.j2'
-      dest: '/etc/systemd/system/redis.service.d/z00-linuxfabrik.conf'
-      owner: 'root'
-      group: 'root'
-      mode: 0o644
+    - name: Deploy /etc/redis/redis.conf (v{{ redis__installed_version }})
+      ansible.builtin.template:
+        src: etc/redis/{{ redis__installed_version }}-redis.conf.j2
+        dest: /etc/redis/redis.conf
+        owner: root
+        group: root
+        mode: "0o644"
+      notify: "redis: restart redis"
+      when:
+        - redis__installed_version in ["7"]
 
-  tags:
-    - 'redis'
+    - name: Deploy /etc/systemd/system/redis.service.d/z00-linuxfabrik.conf.j2
+      ansible.builtin.template:
+        src: etc/systemd/system/redis.service.d/z00-linuxfabrik.conf.j2
+        dest: /etc/systemd/system/redis.service.d/z00-linuxfabrik.conf
+        owner: root
+        group: root
+        mode: "0o644"
 
+- tags:
+    - redis
+    - redis:state
+  block:
 
-- block:
-
-  - name: 'systemctl {{ redis__service_enabled | bool | ternary("enable", "disable") }} --now redis.service'
-    ansible.builtin.systemd:
-      name: 'redis.service'
-      enabled: '{{ redis__service_enabled }}'
-      state: '{{ redis__service_enabled | bool | ternary("started", "stopped") }}'
-      daemon_reload: true
-
-  tags:
-    - 'redis'
-    - 'redis:state'
+    - name: Systemctl {{ redis__service_enabled | bool | ternary("enable", "disable") }} --now redis.service
+      ansible.builtin.systemd:
+        name: redis.service
+        enabled: "{{ redis__service_enabled }}"
+        state: '{{ redis__service_enabled | bool | ternary("started", "stopped") }}'
+        daemon_reload: true

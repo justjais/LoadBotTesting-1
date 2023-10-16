@@ -1,4 +1,5 @@
-- name: 'collabora: restart coolwsd'
+---
+- name: "Collabora: restart coolwsd"
   ansible.builtin.service:
-    name: 'coolwsd'
-    state: 'restarted'
+    name: coolwsd
+    state: restarted

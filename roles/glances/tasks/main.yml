@@ -1,17 +1,17 @@
-- block:
+---
+- tags:
+    - glances
+  block:
 
-  - name: 'Install glances'
-    ansible.builtin.package:
-      name:
-        - 'glances'
-      state: 'present'
+    - name: Install glances
+      ansible.builtin.package:
+        name:
+          - glances
+        state: present
 
-  - name: 'Deploy /etc/profile.d/glances.sh'
-    ansible.builtin.template:
-      src: 'etc/profile.d/glances.sh.j2'
-      dest: '/etc/profile.d/glances.sh'
-      owner: 'root'
-      mode: 0o644
-
-  tags:
-    - 'glances'
+    - name: Deploy /etc/profile.d/glances.sh
+      ansible.builtin.template:
+        src: etc/profile.d/glances.sh.j2
+        dest: /etc/profile.d/glances.sh
+        owner: root
+        mode: "0o644"

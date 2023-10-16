@@ -1,7 +1,7 @@
-- name: 'Remove the cloud-init package'
+---
+- name: Remove the cloud-init package
   hosts:
-    - 'lfops_cloud_init'
+    - lfops_cloud_init
 
   roles:
-
-    - role: 'linuxfabrik.lfops.cloud_init'
+    - role: linuxfabrik.lfops.cloud_init

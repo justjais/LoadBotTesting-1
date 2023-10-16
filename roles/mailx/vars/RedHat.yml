@@ -1,1 +1,2 @@
-mailx__package: 'mailx'
+---
+mailx__package: mailx

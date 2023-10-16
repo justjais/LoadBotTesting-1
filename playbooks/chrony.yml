@@ -1,7 +1,7 @@
-- name: 'Install and configure chrony'
+---
+- name: Install and configure chrony
   hosts:
-    - 'lfops_chrony'
+    - lfops_chrony
 
   roles:
-
-    - role: 'linuxfabrik.lfops.chrony'
+    - role: linuxfabrik.lfops.chrony

@@ -1,7 +1,7 @@
-- name: 'Configure kernel settings'
+---
+- name: Configure kernel settings
   hosts:
-    - 'lfops_kernel_settings'
+    - lfops_kernel_settings
 
   roles:
-
-    - role: 'linuxfabrik.lfops.kernel_settings'
+    - role: linuxfabrik.lfops.kernel_settings

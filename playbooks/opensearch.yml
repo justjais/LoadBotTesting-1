@@ -1,11 +1,11 @@
-- name: 'Install Opensearch on the system'
+---
+- name: Install Opensearch on the system
   hosts:
-    - 'lfops_opensearch'
+    - lfops_opensearch
 
   roles:
-
-    - role: 'linuxfabrik.lfops.repo_opensearch'
+    - role: linuxfabrik.lfops.repo_opensearch
       when:
-        - 'not opensearch__skip_repo_opensearch | default(false)'
+        - not opensearch__skip_repo_opensearch | default(false)
 
-    - role: 'linuxfabrik.lfops.opensearch'
+    - role: linuxfabrik.lfops.opensearch

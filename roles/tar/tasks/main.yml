@@ -1,7 +1,8 @@
-- name: 'Install tar'
+---
+- name: Install tar
   ansible.builtin.package:
-    name: 'tar'
-    state: 'present'
+    name: tar
+    state: present
 
   tags:
-    - 'tar'
+    - tar

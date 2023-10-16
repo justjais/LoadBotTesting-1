@@ -1,7 +1,7 @@
-- name: 'Installs the Icinga Incubator Module'
+---
+- name: Installs the Icinga Incubator Module
   hosts:
-    - 'lfops_icingaweb2_module_incubator'
+    - lfops_icingaweb2_module_incubator
 
   roles:
-
-    - role: 'linuxfabrik.lfops.icingaweb2_module_incubator'
+    - role: linuxfabrik.lfops.icingaweb2_module_incubator

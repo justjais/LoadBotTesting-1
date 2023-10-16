@@ -1,34 +1,35 @@
-icingaweb2__database_host: 'localhost'
-icingaweb2__database_login_host: 'localhost'
-icingaweb2__database_name: 'icingaweb2'
-icingaweb2__default_theme: 'Icinga'
+---
+icingaweb2__database_host: localhost
+icingaweb2__database_login_host: localhost
+icingaweb2__database_name: icingaweb2
+icingaweb2__default_theme: Icinga
 
 # -----------------------------------------------------------------------------
 
 icingaweb2__apache_httpd__mods__dependent_var:
-  - filename: 'env'
+  - filename: env
     enabled: true
-    state: 'present'
+    state: present
 icingaweb2__apache_httpd__vhosts__dependent_var:
-  - conf_server_name: '{{ icingaweb2__url_host }}'
-    by_role: 'icingaweb2'
-    comment: 'vHost for IcingaWeb2'
+  - conf_server_name: "{{ icingaweb2__url_host }}"
+    by_role: icingaweb2
+    comment: vHost for IcingaWeb2
     enabled: true
-    state: 'present'
-    template: 'app'
+    state: present
+    template: app
     allowed_http_methods:
-      - 'GET'
-      - 'OPTIONS'
-      - 'POST'
+      - GET
+      - OPTIONS
+      - POST
     authz_file_extensions: |-
-        Require all granted
+      Require all granted
     authz_document_root: |-
-        Require all granted
+      Require all granted
     virtualhost_port: 80
-    conf_allow_override: 'All'
-    conf_directory_index: 'index.php'
-    conf_document_root: '/usr/share/icingaweb2/public'
-    conf_options: 'FollowSymLinks'
+    conf_allow_override: All
+    conf_directory_index: index.php
+    conf_document_root: /usr/share/icingaweb2/public
+    conf_options: FollowSymLinks
     raw: |-
       <LocationMatch "^/+$">
           Redirect / /icingaweb2
@@ -50,123 +51,93 @@ icingaweb2__authentications__dependent_var: []
 icingaweb2__authentications__group_var: []
 icingaweb2__authentications__host_var: []
 icingaweb2__authentications__role_var:
-  - name: '{{ icingaweb2__database_name }}'
-    backend: 'db'
-    resource: '{{ icingaweb2__database_name }}'
-icingaweb2__authentications__combined_var: '{{ (
-      icingaweb2__authentications__role_var +
-      icingaweb2__authentications__dependent_var +
-      icingaweb2__authentications__group_var +
-      icingaweb2__authentications__host_var
-    ) | linuxfabrik.lfops.combine_lod
-  }}'
+  - name: "{{ icingaweb2__database_name }}"
+    backend: db
+    resource: "{{ icingaweb2__database_name }}"
+icingaweb2__authentications__combined_var: "{{ ( icingaweb2__authentications__role_var + icingaweb2__authentications__dependent_var + icingaweb2__authentications__group_var
+  + icingaweb2__authentications__host_var ) | linuxfabrik.lfops.combine_lod }}"
 
 icingaweb2__groups__dependent_var: []
 icingaweb2__groups__group_var: []
 icingaweb2__groups__host_var: []
 icingaweb2__groups__role_var: []
-icingaweb2__groups__combined_var: '{{ (
-      icingaweb2__groups__role_var +
-      icingaweb2__groups__dependent_var +
-      icingaweb2__groups__group_var +
-      icingaweb2__groups__host_var
-    ) | linuxfabrik.lfops.combine_lod
-  }}'
+icingaweb2__groups__combined_var: "{{ ( icingaweb2__groups__role_var + icingaweb2__groups__dependent_var + icingaweb2__groups__group_var + icingaweb2__groups__host_var
+  ) | linuxfabrik.lfops.combine_lod }}"
 
 icingaweb2__navigation_menu_entries__dependent_var: []
 icingaweb2__navigation_menu_entries__group_var: []
 icingaweb2__navigation_menu_entries__host_var: []
 icingaweb2__navigation_menu_entries__role_var: []
-icingaweb2__navigation_menu_entries__combined_var: '{{ (
-      icingaweb2__navigation_menu_entries__role_var +
-      icingaweb2__navigation_menu_entries__dependent_var +
-      icingaweb2__navigation_menu_entries__group_var +
-      icingaweb2__navigation_menu_entries__host_var
-    ) | linuxfabrik.lfops.combine_lod
-  }}'
+icingaweb2__navigation_menu_entries__combined_var: "{{ ( icingaweb2__navigation_menu_entries__role_var + icingaweb2__navigation_menu_entries__dependent_var + icingaweb2__navigation_menu_entries__group_var
+  + icingaweb2__navigation_menu_entries__host_var ) | linuxfabrik.lfops.combine_lod }}"
 
 icingaweb2__resources__dependent_var: []
 icingaweb2__resources__group_var: []
 icingaweb2__resources__host_var: []
 icingaweb2__resources__role_var:
-  - name: '{{ icingaweb2__database_name }}'
-    type: 'db'
-    db: 'mysql'
-    host: '{{ icingaweb2__database_host }}'
+  - name: "{{ icingaweb2__database_name }}"
+    type: db
+    db: mysql
+    host: "{{ icingaweb2__database_host }}"
     port: 3306
-    dbname: '{{ icingaweb2__database_name }}'
-    username: '{{ icingaweb2__database_login.username }}'
-    password: '{{ icingaweb2__database_login.password }}'
-    charset: 'utf8mb4'
-icingaweb2__resources__combined_var: '{{ (
-      icingaweb2__resources__role_var +
-      icingaweb2__resources__dependent_var +
-      icingaweb2__resources__group_var +
-      icingaweb2__resources__host_var
-    ) | linuxfabrik.lfops.combine_lod
-  }}'
+    dbname: "{{ icingaweb2__database_name }}"
+    username: "{{ icingaweb2__database_login.username }}"
+    password: "{{ icingaweb2__database_login.password }}"
+    charset: utf8mb4
+icingaweb2__resources__combined_var: "{{ ( icingaweb2__resources__role_var + icingaweb2__resources__dependent_var + icingaweb2__resources__group_var + icingaweb2__resources__host_var
+  ) | linuxfabrik.lfops.combine_lod }}"
 
 icingaweb2__roles__dependent_var: []
 icingaweb2__roles__group_var: []
 icingaweb2__roles__host_var: []
 icingaweb2__roles__role_var:
-  - name: 'enrolment'
-    users: 'enrolment-user'
-    permissions: 'module/director,director/api,director/hosts'
-icingaweb2__roles__combined_var: '{{ (
-      icingaweb2__roles__role_var +
-      icingaweb2__roles__dependent_var +
-      icingaweb2__roles__group_var +
-      icingaweb2__roles__host_var
-    ) | linuxfabrik.lfops.combine_lod
-  }}'
+  - name: enrolment
+    users: enrolment-user
+    permissions: module/director,director/api,director/hosts
+icingaweb2__roles__combined_var: "{{ ( icingaweb2__roles__role_var + icingaweb2__roles__dependent_var + icingaweb2__roles__group_var + icingaweb2__roles__host_var
+  ) | linuxfabrik.lfops.combine_lod }}"
 
 icingaweb2__users__dependent_var: []
 icingaweb2__users__group_var: []
 icingaweb2__users__host_var: []
 icingaweb2__users__role_var: []
-icingaweb2__users__combined_var: '{{ (
-      icingaweb2__users__role_var +
-      icingaweb2__users__dependent_var +
-      icingaweb2__users__group_var +
-      icingaweb2__users__host_var
-    ) | linuxfabrik.lfops.combine_lod(unique_key="username")
-  }}'
+icingaweb2__users__combined_var: '{{ ( icingaweb2__users__role_var + icingaweb2__users__dependent_var + icingaweb2__users__group_var + icingaweb2__users__host_var
+  ) | linuxfabrik.lfops.combine_lod(unique_key="username") }}'
 
 icingaweb2__icinga2_master__api_users__dependent_var:
-  - username: '{{ icingaweb2__api_user_login.username }}'
-    password: '{{ icingaweb2__api_user_login.password }}'
+  - username: "{{ icingaweb2__api_user_login.username }}"
+    password: "{{ icingaweb2__api_user_login.password }}"
     permissions:
-      - 'actions/*'
-      - 'objects/modify/*'
-      - 'objects/query/*'
-      - 'status/query'
+      - actions/*
+      - objects/modify/*
+      - objects/query/*
+      - status/query
 
-icingaweb2__php__ini_upload_max_filesize__dependent_var: '10M'
+icingaweb2__php__ini_upload_max_filesize__dependent_var: 10M
 icingaweb2__php__modules__dependent_var:
-  - name: 'php-curl'
-    state: 'present'
-  - name: 'php-intl'
-    state: 'present'
-  - name: 'php-mbstring'
-    state: 'present'
-  - name: 'php-pecl-imagick'
-    state: 'present'
-  - name: 'php-process'
-    state: 'present'
-  - name: 'php-xml'
-    state: 'present'
+  - name: php-curl
+    state: present
+  - name: php-intl
+    state: present
+  - name: php-mbstring
+    state: present
+  - name: php-pecl-imagick
+    state: present
+  - name: php-process
+    state: present
+  - name: php-xml
+    state: present
 
 icingaweb2__mariadb_server__databases__dependent_var:
-  - name: '{{ icingaweb2__database_name }}'
-    collation: 'utf8_general_ci'
-    encoding: 'utf8'
-    state: 'present'
+  - name: "{{ icingaweb2__database_name }}"
+    collation: utf8_general_ci
+    encoding: utf8
+    state: present
 
 icingaweb2__mariadb_server__users__dependent_var:
-  - username: '{{ icingaweb2__database_login.username }}'
-    password: '{{ icingaweb2__database_login.password }}'
-    host: '{{ icingaweb2__database_login_host }}'
+  - username: "{{ icingaweb2__database_login.username }}"
+    password: "{{ icingaweb2__database_login.password }}"
+    host: "{{ icingaweb2__database_login_host }}"
     priv:
-      - '{{ icingaweb2__database_name }}.*:CREATE,ALTER,SELECT,INSERT,UPDATE,DELETE,DROP,CREATE VIEW,INDEX,EXECUTE'
-    state: 'present'
+      - "{{ icingaweb2__database_name }}.*:CREATE,ALTER,SELECT,INSERT,UPDATE,DELETE,DROP,CREATE VIEW,INDEX,EXECUTE"
+    state: present

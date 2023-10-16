@@ -1,66 +1,64 @@
-- block:
+---
+- tags:
+    - ansible_init
 
-  - name: 'Update ansible_init (ansinv) itself'
-    ansible.builtin.git:
-      repo: '{{ ansible_init__url }}'
-      dest: '{{ ansible_init__ansinv_path }}'
-      version: '{{ ansible_init__version }}'
-    ignore_errors: true
+  block:
 
-  - name: 'Update ../lfops'
-    ansible.builtin.git:
-      repo: '{{ ansible_init__lfops_url }}'
-      dest: '{{ ansible_init__ansinv_path }}../lfops'
-      version: 'main'
-    ignore_errors: true
+    - name: Update ansible_init (ansinv) itself
+      ansible.builtin.git:
+        repo: "{{ ansible_init__url }}"
+        dest: "{{ ansible_init__ansinv_path }}"
+        version: "{{ ansible_init__version }}"
+      ignore_errors: true
 
-  tags:
-    - 'ansible_init'
+    - name: Update ../lfops
+      ansible.builtin.git:
+        repo: "{{ ansible_init__lfops_url }}"
+        dest: "{{ ansible_init__ansinv_path }}../lfops"
+        version: main
+      ignore_errors: true
 
+- tags:
+    - ansible_init
+    - ansible_init:command
 
-- block:
+  block:
 
-  - name: 'Load repo list'
-    ansible.builtin.include_vars:
-      file: '{{ ansible_init__ansinv_path }}/control_node/group_vars/repos.yml'
+    - name: Load repo list
+      ansible.builtin.include_vars:
+        file: "{{ ansible_init__ansinv_path }}/control_node/group_vars/repos.yml"
 
-  tags:
-    - 'ansible_init'
-    - 'ansible_init:command'
+- tags:
+    - ansible_init
+  block:
 
+    - name: Clone the inventories
+      ansible.builtin.git:
+        repo: '{{ item["url"] }}'
+        dest: '{{ ansible_init__ansinv_path }}/{{ item["name"] }}'
+        version: '{{ item["version"] | d("main") }}'
+      loop: "{{ ansible_init__inventories }}"
+      ignore_errors: true
 
-- block:
+    - name: Mkdir -p ../roles
+      ansible.builtin.file:
+        path: "{{ ansible_init__ansinv_path }}../roles/"
+        state: directory
+      when: ansible_init__roles is defined and ansible_init__roles | length
 
-  - name: 'Clone the inventories'
-    ansible.builtin.git:
-      repo: '{{ item["url"] }}'
-      dest: '{{ ansible_init__ansinv_path }}/{{ item["name"] }}'
-      version: '{{ item["version"] |d("main") }}'
-    loop: '{{ ansible_init__inventories }}'
-    ignore_errors: true
+    - name: Clone the roles to ../roles/
+      ansible.builtin.git:
+        repo: '{{ item["url"] }}'
+        dest: '{{ ansible_init__ansinv_path }}../roles/{{ item["name"] }}'
+        version: '{{ item["version"] | d("main") }}'
+      loop: "{{ ansible_init__roles }}"
+      ignore_errors: true
 
-  - name: 'mkdir -p ../roles'
-    ansible.builtin.file:
-      path: '{{ ansible_init__ansinv_path }}../roles/'
-      state: 'directory'
-    when: 'ansible_init__roles is defined and ansible_init__roles | length'
-
-  - name: 'Clone the roles to ../roles/'
-    ansible.builtin.git:
-      repo: '{{ item["url"] }}'
-      dest: '{{ ansible_init__ansinv_path }}../roles/{{ item["name"] }}'
-      version: '{{ item["version"] |d("main") }}'
-    loop: '{{ ansible_init__roles }}'
-    ignore_errors: true
-
-  - name: 'Install ansible collections'
-    community.general.ansible_galaxy_install:
-      name: '{{ item["name"] }}'
-      # no_deps: '{{ item["no_deps"] | d("False") }}'
-      type: '{{ item["type"] | d("collection") }}'
-      force: true # from the doc: *Ansible 2.9 and 2.10*: Must be `true' to upgrade roles and collections.
-    loop: "{{ ansible_init__ansible_collections }}"
-    ignore_errors: true
-
-  tags:
-    - 'ansible_init'
+    - name: Install ansible collections
+      community.general.ansible_galaxy_install:
+        name: '{{ item["name"] }}'
+        # no_deps: '{{ item["no_deps"] | d("False") }}'
+        type: '{{ item["type"] | d("collection") }}'
+        force: true # from the doc: *Ansible 2.9 and 2.10*: Must be `true' to upgrade roles and collections.
+      loop: "{{ ansible_init__ansible_collections }}"
+      ignore_errors: true

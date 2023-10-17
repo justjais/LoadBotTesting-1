@@ -1,8 +1,8 @@
-- block:
+---
+- tags:
+    - timezone
+  block:
 
-  - name: 'Set timezone to {{ timezone__timezone }}'
-    community.general.timezone:
-      name: '{{ timezone__timezone }}'
-
-  tags:
-    - 'timezone'
+    - name: Set timezone to {{ timezone__timezone }}
+      community.general.timezone:
+        name: "{{ timezone__timezone }}"

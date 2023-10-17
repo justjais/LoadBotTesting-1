@@ -3,7 +3,6 @@
     - grav
 
   block:
-
     - name: Install unzip
       ansible.builtin.package:
         name: unzip
@@ -32,7 +31,6 @@
     - grav:cron
 
   block:
-
     - name: Deploy /etc/systemd/system/grav-selfupgrade.service
       ansible.builtin.template:
         src: etc/systemd/system/grav-selfupgrade.service.j2
@@ -75,7 +73,6 @@
     - grav:state
 
   block:
-
     - name: Systemctl {{ grav__timer_selfupgrade_enabled | bool | ternary("enable", "disable") }} grav-selfupgrade.timer --now
       ansible.builtin.systemd:
         name: grav-selfupgrade.timer
@@ -95,7 +92,6 @@
     - grav:user
 
   block:
-
     - name: Install the Administration Panel plugin for Grav
       ansible.builtin.command: |
         bin/gpm install admin --all-yes
@@ -118,7 +114,6 @@
 - tags:
     - grav
   block:
-
     # https://learn.getgrav.org/17/troubleshooting/permissions
 
     - name: Chown -R apache:apache {{ grav__install_dir | quote }}

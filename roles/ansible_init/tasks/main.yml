@@ -3,7 +3,6 @@
     - ansible_init
 
   block:
-
     - name: Update ansible_init (ansinv) itself
       ansible.builtin.git:
         repo: "{{ ansible_init__url }}"
@@ -23,7 +22,6 @@
     - ansible_init:command
 
   block:
-
     - name: Load repo list
       ansible.builtin.include_vars:
         file: "{{ ansible_init__ansinv_path }}/control_node/group_vars/repos.yml"
@@ -31,7 +29,6 @@
 - tags:
     - ansible_init
   block:
-
     - name: Clone the inventories
       ansible.builtin.git:
         repo: '{{ item["url"] }}'

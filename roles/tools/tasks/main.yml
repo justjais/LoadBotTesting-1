@@ -1,40 +1,40 @@
-- block:
+---
+- tags:
+    - tools
+  block:
 
-  - name: 'Install additional tools like bash-completion, jq, nano, ncdu and other'
-    ansible.builtin.package:
-      name:
-        - 'bash-completion'
-        - 'cloud-utils-growpart'
-        - 'iftop'
-        - 'jq'
-        - 'lsof'
-        - 'nano'
-        - 'ncdu'
-        - 'rsync'
-        - 'tmux'
-        - 'vim'
-        - 'wget'
-      state: 'present'
+    - name: Install additional tools like bash-completion, jq, nano, ncdu and other
+      ansible.builtin.package:
+        name:
+          - bash-completion
+          - cloud-utils-growpart
+          - iftop
+          - jq
+          - lsof
+          - nano
+          - ncdu
+          - rsync
+          - tmux
+          - vim
+          - wget
+        state: present
 
-  - name: 'Install glibc-langpack-de'
-    ansible.builtin.package:
-      name:
-        - 'glibc-langpack-de' # this prevents "Failed to set locale, defaulting to C.UTF-8" errors when using a german LANG on the local admin machine
-      state: 'present'
-    when:
-      - 'ansible_facts["os_family"] == "RedHat" and ansible_facts["distribution_major_version"] in ["8"]'
+    - name: Install glibc-langpack-de
+      ansible.builtin.package:
+        name:
+          - glibc-langpack-de # this prevents "Failed to set locale, defaulting to C.UTF-8" errors when using a german LANG on the local admin machine
+        state: present
+      when:
+        - ansible_facts["os_family"] == "RedHat" and ansible_facts["distribution_major_version"] in ["8"]
 
-  - name: 'Enhance session profiles for all users in /etc/profile.d'
-    ansible.builtin.template:
-      src: 'etc/profile.d/{{ item }}.j2'
-      dest: '/etc/profile.d/{{ item }}'
-      owner: 'root'
-      mode: 0o644
-    loop:
-      - 'alias.sh'
-      - 'editor.sh'
-      - 'history.sh'
-      - 'prompt.sh'
-
-  tags:
-    - 'tools'
+    - name: Enhance session profiles for all users in /etc/profile.d
+      ansible.builtin.template:
+        src: etc/profile.d/{{ item }}.j2
+        dest: /etc/profile.d/{{ item }}
+        owner: root
+        mode: "0o644"
+      loop:
+        - alias.sh
+        - editor.sh
+        - history.sh
+        - prompt.sh

@@ -1,67 +1,68 @@
+---
 - block:
 
-  - name: 'Clone the monitoring plugins repo'
-    ansible.builtin.import_role:
-      name: 'shared'
-      tasks_from: 'clone-monitoring-plugins-repo.yml'
-    vars:
-      shared__monitoring_plugins_repo_version: '{{ monitoring_plugins_grafana_dashboards__repo_version }}'
+    - name: Clone the monitoring plugins repo
+      ansible.builtin.import_role:
+        name: shared
+        tasks_from: clone-monitoring-plugins-repo.yml
+      vars:
+        shared__monitoring_plugins_repo_version: "{{ monitoring_plugins_grafana_dashboards__repo_version }}"
 
-  - name: 'Generate list of monitoring plugins'
-    ansible.builtin.import_role:
-      name: 'monitoring_plugins'
-      tasks_from: 'generate-monitoring-plugins-list.yml'
+    - name: Generate list of monitoring plugins
+      ansible.builtin.import_role:
+        name: monitoring_plugins
+        tasks_from: generate-monitoring-plugins-list.yml
 
-  - name: 'mkdir -p /tmp/ansible.monitoring_plugins_grafana_dashboards'
-    ansible.builtin.file:
-      path: '/tmp/ansible.monitoring_plugins_grafana_dashboards'
-      state: 'directory'
+    - name: mkdir -p /tmp/ansible.monitoring_plugins_grafana_dashboards
+      ansible.builtin.file:
+        path: /tmp/ansible.monitoring_plugins_grafana_dashboards
+        state: directory
 
-  - name: 'Copy the global grafana assets to /tmp/ansible.monitoring_plugins_grafana_dashboards'
-    ansible.builtin.copy:
-      src: '/tmp/ansible.monitoring-plugins-repo/assets/grafana/{{ item }}.yml'
-      dest: '/tmp/ansible.monitoring_plugins_grafana_dashboards/{{ item }}.yml'
-    loop:
-      - 'dashboard-default'
-      - 'dashboard-icinga'
-      - 'folder'
+    - name: Copy the global grafana assets to /tmp/ansible.monitoring_plugins_grafana_dashboards
+      ansible.builtin.copy:
+        src: /tmp/ansible.monitoring-plugins-repo/assets/grafana/{{ item }}.yml
+        dest: /tmp/ansible.monitoring_plugins_grafana_dashboards/{{ item }}.yml
+      loop:
+        - dashboard-default
+        - dashboard-icinga
+        - folder
 
-  - name: 'Copy grafana check plugin dashboards to /tmp/ansible.monitoring_plugins_grafana_dashboards'
-    ansible.builtin.copy:
-      src: '/tmp/ansible.monitoring-plugins-repo/check-plugins/{{ item }}/grafana/{{ item }}.yml'
-      dest: '/tmp/ansible.monitoring_plugins_grafana_dashboards/{{ item }}.yml'
-    when: '"/tmp/ansible.monitoring-plugins-repo/check-plugins/{{ item }}/grafana/{{ item }}.yml" is file'
-    loop: '{{ monitoring_plugins__plugin_list }}'
+    - name: Copy grafana check plugin dashboards to /tmp/ansible.monitoring_plugins_grafana_dashboards
+      ansible.builtin.copy:
+        src: /tmp/ansible.monitoring-plugins-repo/check-plugins/{{ item }}/grafana/{{ item }}.yml
+        dest: /tmp/ansible.monitoring_plugins_grafana_dashboards/{{ item }}.yml
+      when: '"/tmp/ansible.monitoring-plugins-repo/check-plugins/{{ item }}/grafana/{{ item }}.yml" is file'
+      loop: "{{ monitoring_plugins__plugin_list }}"
 
-  - name: '/usr/local/bin/grr apply ... # global assets'
-    ansible.builtin.command: '/usr/local/bin/grr apply /tmp/ansible.monitoring_plugins_grafana_dashboards/{{ item }}.yml'
-    environment:
-      GRAFANA_URL: '{{ monitoring_plugins_grafana_dashboards__grafana_url }}'
-      GRAFANA_USER: '{{ monitoring_plugins_grafana_dashboard__grafana_service_account_login["username"] }}'
-      GRAFANA_TOKEN: '{{ monitoring_plugins_grafana_dashboard__grafana_service_account_login["password"] }}'
-    register: 'monitoring_plugins_grafana_dashboards__grr_apply_result'
-    changed_when: '"added" in monitoring_plugins_grafana_dashboards__grr_apply_result["stdout"] or "updated" in monitoring_plugins_grafana_dashboards__grr_apply_result["stdout"]'
-    loop:
+    - name: "/usr/local/bin/grr apply ... # global assets"
+      ansible.builtin.command: /usr/local/bin/grr apply /tmp/ansible.monitoring_plugins_grafana_dashboards/{{ item }}.yml
+      environment:
+        GRAFANA_URL: "{{ monitoring_plugins_grafana_dashboards__grafana_url }}"
+        GRAFANA_USER: '{{ monitoring_plugins_grafana_dashboard__grafana_service_account_login["username"] }}'
+        GRAFANA_TOKEN: '{{ monitoring_plugins_grafana_dashboard__grafana_service_account_login["password"] }}'
+      register: monitoring_plugins_grafana_dashboards__grr_apply_result
+      changed_when: '"added" in monitoring_plugins_grafana_dashboards__grr_apply_result["stdout"] or "updated" in monitoring_plugins_grafana_dashboards__grr_apply_result["stdout"]'
+      loop:
       # note that "folder" needs to be the first
-      - 'folder'
-      - 'dashboard-default'
-      - 'dashboard-icinga'
+        - folder
+        - dashboard-default
+        - dashboard-icinga
 
-  - name: '/usr/local/bin/grr apply /tmp/ansible.monitoring_plugins_grafana_dashboards/*.yml'
-    ansible.builtin.command: '/usr/local/bin/grr apply /tmp/ansible.monitoring_plugins_grafana_dashboards/{{ item }}.yml'
-    environment:
-      GRAFANA_URL: '{{ monitoring_plugins_grafana_dashboards__grafana_url }}'
-      GRAFANA_USER: '{{ monitoring_plugins_grafana_dashboard__grafana_service_account_login["username"] }}'
-      GRAFANA_TOKEN: '{{ monitoring_plugins_grafana_dashboard__grafana_service_account_login["password"] }}'
-    register: 'monitoring_plugins_grafana_dashboards__grr_apply_result'
-    changed_when: '"added" in monitoring_plugins_grafana_dashboards__grr_apply_result["stdout"] or "updated" in monitoring_plugins_grafana_dashboards__grr_apply_result["stdout"]'
-    when: '"/tmp/ansible.monitoring-plugins-repo/check-plugins/{{ item }}/grafana/{{ item }}.yml" is file'
-    loop: '{{ monitoring_plugins__plugin_list }}'
+    - name: /usr/local/bin/grr apply /tmp/ansible.monitoring_plugins_grafana_dashboards/*.yml
+      ansible.builtin.command: /usr/local/bin/grr apply /tmp/ansible.monitoring_plugins_grafana_dashboards/{{ item }}.yml
+      environment:
+        GRAFANA_URL: "{{ monitoring_plugins_grafana_dashboards__grafana_url }}"
+        GRAFANA_USER: '{{ monitoring_plugins_grafana_dashboard__grafana_service_account_login["username"] }}'
+        GRAFANA_TOKEN: '{{ monitoring_plugins_grafana_dashboard__grafana_service_account_login["password"] }}'
+      register: monitoring_plugins_grafana_dashboards__grr_apply_result
+      changed_when: '"added" in monitoring_plugins_grafana_dashboards__grr_apply_result["stdout"] or "updated" in monitoring_plugins_grafana_dashboards__grr_apply_result["stdout"]'
+      when: '"/tmp/ansible.monitoring-plugins-repo/check-plugins/{{ item }}/grafana/{{ item }}.yml" is file'
+      loop: "{{ monitoring_plugins__plugin_list }}"
 
-  - name: 'rm -rf /tmp/ansible.monitoring_plugins_grafana_dashboards'
-    ansible.builtin.file:
-      path: '/tmp/ansible.monitoring_plugins_grafana_dashboards'
-      state: 'absent'
+    - name: rm -rf /tmp/ansible.monitoring_plugins_grafana_dashboards
+      ansible.builtin.file:
+        path: /tmp/ansible.monitoring_plugins_grafana_dashboards
+        state: absent
 
   tags:
-    - 'monitoring_plugins_grafana_dashboards'
+    - monitoring_plugins_grafana_dashboards

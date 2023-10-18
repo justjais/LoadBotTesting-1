@@ -1,7 +1,7 @@
-- name: 'Install and configure rsyslog'
+---
+- name: Install and configure rsyslog
   hosts:
-    - 'lfops_rsyslog'
+    - lfops_rsyslog
 
   roles:
-
-    - role: 'linuxfabrik.lfops.rsyslog'
+    - role: linuxfabrik.lfops.rsyslog

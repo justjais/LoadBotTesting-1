@@ -1,4 +1,5 @@
-- name: 'Perform platform/version specific tasks'
+---
+- name: Perform platform/version specific tasks
   ansible.builtin.include_tasks: '{{ lookup("first_found", __task_file) }}'
   vars:
     __task_file:
@@ -9,8 +10,8 @@
         - '{{ ansible_facts["os_family"] }}{{ ansible_facts["distribution_version"] }}.yml'
         - '{{ ansible_facts["os_family"] }}{{ ansible_facts["distribution_major_version"] }}.yml'
         - '{{ ansible_facts["os_family"] }}.yml'
-        - 'os-not-supported.yml'
+        - os-not-supported.yml
       paths:
-        - '{{ role_path }}/tasks'
+        - "{{ role_path }}/tasks"
   tags:
-    - 'repo_monitoring_plugins'
+    - repo_monitoring_plugins

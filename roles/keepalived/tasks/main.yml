@@ -3,7 +3,6 @@
     - keepalived
 
   block:
-
     - name: Install keepalived
       ansible.builtin.package:
         name:
@@ -23,7 +22,6 @@
     - keepalived
     - keepalived:state
   block:
-
     - name: Systemctl {{ keepalived__service_enabled | bool | ternary("enable", "disable") }} --now keepalived.service
       ansible.builtin.systemd:
         name: keepalived.service

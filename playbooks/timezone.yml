@@ -1,7 +1,7 @@
-- name: 'Manage and configure Timezone'
+---
+- name: Manage and configure Timezone
   hosts:
-    - 'lfops_timezone'
+    - lfops_timezone
 
   roles:
-
-    - role: 'linuxfabrik.lfops.timezone'
+    - role: linuxfabrik.lfops.timezone

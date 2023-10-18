@@ -1,138 +1,134 @@
+---
 - block:
 
-  - name: 'Install influxdb'
-    ansible.builtin.package:
-      name:
-        - 'influxdb'
-      state: 'present'
+    - name: Install influxdb
+      ansible.builtin.package:
+        name:
+          - influxdb
+        state: present
 
-  - name: 'Deploy /etc/influxdb/influxdb.conf'
-    ansible.builtin.template:
-      src: 'etc/influxdb/influxdb.conf.j2'
-      dest: '/etc/influxdb/influxdb.conf'
-      owner: 'root'
-      group: 'root'
-      mode: 0o644
-    notify: 'influxdb: restart influxdb'
+    - name: Deploy /etc/influxdb/influxdb.conf
+      ansible.builtin.template:
+        src: etc/influxdb/influxdb.conf.j2
+        dest: /etc/influxdb/influxdb.conf
+        owner: root
+        group: root
+        mode: "0o644"
+      notify: "influxdb: restart influxdb"
 
   tags:
-    - 'influxdb'
-
+    - influxdb
 
 - block:
 
-  - name: 'systemctl {{ influxdb__service_enabled | bool | ternary("enable", "disable") }} --now influxdb.service'
-    ansible.builtin.systemd:
-      name: 'influxdb.service'
-      enabled: '{{ influxdb__service_enabled }}'
-      state: '{{ influxdb__service_enabled | bool | ternary("started", "stopped") }}'
-    register: 'influxdb__systemctl_result'
+    - name: systemctl {{ influxdb__service_enabled | bool | ternary("enable", "disable") }} --now influxdb.service
+      ansible.builtin.systemd:
+        name: influxdb.service
+        enabled: "{{ influxdb__service_enabled }}"
+        state: '{{ influxdb__service_enabled | bool | ternary("started", "stopped") }}'
+      register: influxdb__systemctl_result
 
   tags:
-    - 'influxdb'
-    - 'influxdb:state'
-
+    - influxdb
+    - influxdb:state
 
 - block:
 
-  - name: 'wait 5 seconds for influxdb to start'
-    ansible.builtin.pause:
-      seconds: 5
-    when: 'influxdb__systemctl_result["changed"] | bool'
+    - name: wait 5 seconds for influxdb to start
+      ansible.builtin.pause:
+        seconds: 5
+      when: influxdb__systemctl_result["changed"] | bool
 
-  - name: 'create new admin user "{{ influxdb__admin_login["username"] }}"'
-    community.general.influxdb_user:
+    - name: create new admin user "{{ influxdb__admin_login["username"] }}"
+      community.general.influxdb_user:
       # always pass the username and password, if there is no admin account it doesn't matter, and prevents the task from failing on the 2nd run
-      username: '{{ influxdb__admin_login.username }}'
-      password: '{{ influxdb__admin_login.password | default(omit) }}'
-      user_name: '{{ influxdb__admin_login.username }}'
-      user_password: '{{ influxdb__admin_login.password }}'
-      admin: true
-      state: 'present'
-    vars:
-      ansible_python_interpreter: '/opt/python-venv/influxdb/bin/python3'
+        username: "{{ influxdb__admin_login.username }}"
+        password: "{{ influxdb__admin_login.password | default(omit) }}"
+        user_name: "{{ influxdb__admin_login.username }}"
+        user_password: "{{ influxdb__admin_login.password }}"
+        admin: true
+        state: present
+      vars:
+        ansible_python_interpreter: /opt/python-venv/influxdb/bin/python3
 
   tags:
-    - 'influxdb'
-
+    - influxdb
 
 - block:
 
-  - name: 'Deploy /usr/local/bin/influxdb-dump'
-    ansible.builtin.template:
-      src: 'usr/local/bin/influxdb-dump.j2'
-      dest: '/usr/local/bin/influxdb-dump'
-      mode: 0o755
+    - name: Deploy /usr/local/bin/influxdb-dump
+      ansible.builtin.template:
+        src: usr/local/bin/influxdb-dump.j2
+        dest: /usr/local/bin/influxdb-dump
+        mode: "0o755"
 
-  - name: 'Deploy /etc/systemd/system/influxdb-dump.timer'
-    ansible.builtin.template:
-      src: 'etc/systemd/system/influxdb-dump.timer.j2'
-      dest: '/etc/systemd/system/influxdb-dump.timer'
-      owner: 'root'
-      group: 'root'
-      mode: 0o644
+    - name: Deploy /etc/systemd/system/influxdb-dump.timer
+      ansible.builtin.template:
+        src: etc/systemd/system/influxdb-dump.timer.j2
+        dest: /etc/systemd/system/influxdb-dump.timer
+        owner: root
+        group: root
+        mode: "0o644"
 
-  - name: 'Deploy /etc/systemd/system/influxdb-dump.service'
-    ansible.builtin.template:
-      src: 'etc/systemd/system/influxdb-dump.service.j2'
-      dest: '/etc/systemd/system/influxdb-dump.service'
-      owner: 'root'
-      group: 'root'
-      mode: 0o644
+    - name: Deploy /etc/systemd/system/influxdb-dump.service
+      ansible.builtin.template:
+        src: etc/systemd/system/influxdb-dump.service.j2
+        dest: /etc/systemd/system/influxdb-dump.service
+        owner: root
+        group: root
+        mode: "0o644"
 
-  - name: 'systemctl {{ influxdb__dump_timer_enabled | bool | ternary("enable", "disable") }} --now influxdb-dump.timer'
-    ansible.builtin.systemd:
-      name: 'influxdb-dump.timer'
-      enabled: '{{ influxdb__dump_timer_enabled }}'
-      state: '{{ influxdb__dump_timer_enabled | bool | ternary("started", "stopped") }}'
+    - name: systemctl {{ influxdb__dump_timer_enabled | bool | ternary("enable", "disable") }} --now influxdb-dump.timer
+      ansible.builtin.systemd:
+        name: influxdb-dump.timer
+        enabled: "{{ influxdb__dump_timer_enabled }}"
+        state: '{{ influxdb__dump_timer_enabled | bool | ternary("started", "stopped") }}'
 
   tags:
-    - 'influxdb'
-    - 'influxdb:dump'
-
+    - influxdb
+    - influxdb:dump
 
 - block:
 
-  - name: 'Create or delete influxdb databases'
-    community.general.influxdb_database:
-      database_name: '{{ item.name }}'
-      password: '{{ influxdb__admin_login.password | default(omit) }}'
-      username: '{{ influxdb__admin_login.username }}'
-      state: '{{ item.state | default("present") }}'
-    loop: '{{ influxdb__databases__combined_var }}'
-    vars:
-      ansible_python_interpreter: '/opt/python-venv/influxdb/bin/python3'
+    - name: Create or delete influxdb databases
+      community.general.influxdb_database:
+        database_name: "{{ item.name }}"
+        password: "{{ influxdb__admin_login.password | default(omit) }}"
+        username: "{{ influxdb__admin_login.username }}"
+        state: '{{ item.state | default("present") }}'
+      loop: "{{ influxdb__databases__combined_var }}"
+      vars:
+        ansible_python_interpreter: /opt/python-venv/influxdb/bin/python3
 
-  - name: 'Create retention policy'
-    community.general.influxdb_retention_policy:
-      database_name: '{{ item.name }}'
-      policy_name: 'lf_retention_policy'
-      password: '{{ influxdb__admin_login.password | default(omit) }}'
-      username: '{{ influxdb__admin_login.username }}'
-      duration: '{{ item.retention }}'
-      replication: 1
-      default: true
-    loop: '{{ influxdb__databases__combined_var }}'
-    vars:
-      ansible_python_interpreter: '/opt/python-venv/influxdb/bin/python3'
+    - name: Create retention policy
+      community.general.influxdb_retention_policy:
+        database_name: "{{ item.name }}"
+        policy_name: lf_retention_policy
+        password: "{{ influxdb__admin_login.password | default(omit) }}"
+        username: "{{ influxdb__admin_login.username }}"
+        duration: "{{ item.retention }}"
+        replication: 1
+        default: true
+      loop: "{{ influxdb__databases__combined_var }}"
+      vars:
+        ansible_python_interpreter: /opt/python-venv/influxdb/bin/python3
 
   tags:
-    - 'influxdb'
-    - 'influxdb:database'
+    - influxdb
+    - influxdb:database
 
-
-- name: 'Create, update or delete influxdb users'
+- name: Create, update or delete influxdb users
   community.general.influxdb_user:
-    login_username: '{{ influxdb__admin_login.username }}'
-    login_password: '{{ influxdb__admin_login.password | default(omit) }}'
-    user_name: '{{ item.name }}'
-    user_password: '{{ item.password }}'
+    login_username: "{{ influxdb__admin_login.username }}"
+    login_password: "{{ influxdb__admin_login.password | default(omit) }}"
+    user_name: "{{ item.name }}"
+    user_password: "{{ item.password }}"
     state: '{{ item.state | default("present") }}'
-    grants: '{{ item.grants | default(omit) }}'
-    admin: '{{ item.admin | default(false) }}'
-  loop: '{{ influxdb__users__combined_var }}'
+    grants: "{{ item.grants | default(omit) }}"
+    admin: "{{ item.admin | default(false) }}"
+  loop: "{{ influxdb__users__combined_var }}"
   vars:
-    ansible_python_interpreter: '/opt/python-venv/influxdb/bin/python3'
+    ansible_python_interpreter: /opt/python-venv/influxdb/bin/python3
   tags:
-    - 'influxdb'
-    - 'influxdb:user'
+    - influxdb
+    - influxdb:user

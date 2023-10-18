@@ -1,140 +1,138 @@
+---
 - block:
 
-  - name: 'Install tomcat-admin-webapps'
-    ansible.builtin.package:
-      name: 'tomcat-admin-webapps'  # installs java and tomcat, too
-      state: 'present'
-    when:
-      - 'not apache_tomcat__skip_manager | d(false)'
+    - name: Install tomcat-admin-webapps
+      ansible.builtin.package:
+        name: tomcat-admin-webapps # installs java and tomcat, too
+        state: present
+      when:
+        - not apache_tomcat__skip_manager | d(false)
 
-  - name: 'Install tomcat'
-    ansible.builtin.package:
-      name: 'tomcat'  # installs java, too
-      state: 'present'
-    when:
-      - 'apache_tomcat__skip_manager | d(false)'
-
-  tags:
-    - 'apache_tomcat'
-
-
-- block:
-
-  - name: 'Copy tomcat logrotate template to /etc/logrotate.d'
-    ansible.builtin.template:
-      src: 'etc/logrotate.d/tomcat.j2'
-      dest: '/etc/logrotate.d/tomcat'
-      owner: 'root'
-      group: 'root'
-      mode: 0o644
-
-  - name: 'mkdir -p /etc/systemd/system/tomcat.service.d'
-    ansible.builtin.file:
-      path: '/etc/systemd/system/tomcat.service.d'
-      state: 'directory'
-      owner: 'root'
-      group: 'root'
-      mode: 0o755
-
-  - name: 'Deploy /etc/systemd/system/tomcat.service.d/override.conf'
-    ansible.builtin.template:
-      src: 'etc/systemd/system/tomcat.service.d/override.conf.j2'
-      dest: '/etc/systemd/system/tomcat.service.d/override.conf'
-      owner: 'root'
-      group: 'root'
-      mode: 0o644
-    notify: 'apache_tomcat: restart tomcat.service'
-    register: 'apache_tomcat__systemd_service_override_result'
-
-  - name: 'systemctl daemon-reload'
-    ansible.builtin.systemd:
-      daemon_reload: true
-    when:
-      - 'apache_tomcat__systemd_service_override_result is changed'
-
-  - name: 'Deploy /etc/tomcat/context.xml'
-    ansible.builtin.template:
-      src: 'etc/tomcat/context.xml.j2'
-      dest: '/etc/tomcat/context.xml'
-      owner: 'root'
-      group: 'tomcat'
-      mode: 0o644
-    notify: 'apache_tomcat: restart tomcat.service'
-
-  - name: 'Deploy /etc/tomcat/logging.properties'
-    ansible.builtin.template:
-      src: 'etc/tomcat/logging.properties.j2'
-      dest: '/etc/tomcat/logging.properties'
-      owner: 'root'
-      group: 'tomcat'
-      mode: 0o644
-    notify: 'apache_tomcat: restart tomcat.service'
-
-  - name: 'Deploy /etc/tomcat/server.xml'
-    ansible.builtin.template:
-      src: 'etc/tomcat/server.xml.j2'
-      dest: '/etc/tomcat/server.xml'
-      owner: 'root'
-      group: 'tomcat'
-      mode: 0o644
-    notify: 'apache_tomcat: restart tomcat.service'
-
-  - name: 'Deploy /var/lib/tomcat/webapps/manager/META-INF/context.xml'
-    ansible.builtin.template:
-      src: 'var/lib/tomcat/webapps/manager/META-INF/context.xml.j2'
-      dest: '/var/lib/tomcat/webapps/manager/META-INF/context.xml'
-      owner: 'root'
-      group: 'tomcat'
-      mode: 0o664
-    notify: 'apache_tomcat: restart tomcat.service'
-    when:
-      - 'not apache_tomcat__skip_manager | d(false)'
-
-  - name: 'Deploy /var/lib/tomcat/webapps/manager/WEB-INF/web.xml'
-    ansible.builtin.template:
-      src: 'var/lib/tomcat/webapps/manager/WEB-INF/web.xml.j2'
-      dest: '/var/lib/tomcat/webapps/manager/WEB-INF/web.xml'
-      owner: 'root'
-      group: 'tomcat'
-      mode: 0o664
-    notify: 'apache_tomcat: restart tomcat.service'
-    when:
-      - 'not apache_tomcat__skip_manager | d(false)'
+    - name: Install tomcat
+      ansible.builtin.package:
+        name: tomcat # installs java, too
+        state: present
+      when:
+        - apache_tomcat__skip_manager | d(false)
 
   tags:
-    - 'apache_tomcat'
-    - 'apache_tomcat:configure'
-
+    - apache_tomcat
 
 - block:
 
-  - name: 'Combined Users:'
-    ansible.builtin.debug:
-      var: 'apache_tomcat__users__combined_var'
+    - name: Copy tomcat logrotate template to /etc/logrotate.d
+      ansible.builtin.template:
+        src: etc/logrotate.d/tomcat.j2
+        dest: /etc/logrotate.d/tomcat
+        owner: root
+        group: root
+        mode: "0o644"
 
-  - name: 'Deploy /etc/tomcat/tomcat-users.xml'
-    ansible.builtin.template:
-      src: 'etc/tomcat/tomcat-users.xml.j2'
-      dest: '/etc/tomcat/tomcat-users.xml'
-      owner: 'root'
-      group: 'tomcat'
-      mode: 0o640
-    notify: 'apache_tomcat: restart tomcat.service'
+    - name: mkdir -p /etc/systemd/system/tomcat.service.d
+      ansible.builtin.file:
+        path: /etc/systemd/system/tomcat.service.d
+        state: directory
+        owner: root
+        group: root
+        mode: "0o755"
+
+    - name: Deploy /etc/systemd/system/tomcat.service.d/override.conf
+      ansible.builtin.template:
+        src: etc/systemd/system/tomcat.service.d/override.conf.j2
+        dest: /etc/systemd/system/tomcat.service.d/override.conf
+        owner: root
+        group: root
+        mode: "0o644"
+      notify: "apache_tomcat: restart tomcat.service"
+      register: apache_tomcat__systemd_service_override_result
+
+    - name: systemctl daemon-reload
+      ansible.builtin.systemd:
+        daemon_reload: true
+      when:
+        - apache_tomcat__systemd_service_override_result is changed
+
+    - name: Deploy /etc/tomcat/context.xml
+      ansible.builtin.template:
+        src: etc/tomcat/context.xml.j2
+        dest: /etc/tomcat/context.xml
+        owner: root
+        group: tomcat
+        mode: "0o644"
+      notify: "apache_tomcat: restart tomcat.service"
+
+    - name: Deploy /etc/tomcat/logging.properties
+      ansible.builtin.template:
+        src: etc/tomcat/logging.properties.j2
+        dest: /etc/tomcat/logging.properties
+        owner: root
+        group: tomcat
+        mode: "0o644"
+      notify: "apache_tomcat: restart tomcat.service"
+
+    - name: Deploy /etc/tomcat/server.xml
+      ansible.builtin.template:
+        src: etc/tomcat/server.xml.j2
+        dest: /etc/tomcat/server.xml
+        owner: root
+        group: tomcat
+        mode: "0o644"
+      notify: "apache_tomcat: restart tomcat.service"
+
+    - name: Deploy /var/lib/tomcat/webapps/manager/META-INF/context.xml
+      ansible.builtin.template:
+        src: var/lib/tomcat/webapps/manager/META-INF/context.xml.j2
+        dest: /var/lib/tomcat/webapps/manager/META-INF/context.xml
+        owner: root
+        group: tomcat
+        mode: "0o664"
+      notify: "apache_tomcat: restart tomcat.service"
+      when:
+        - not apache_tomcat__skip_manager | d(false)
+
+    - name: Deploy /var/lib/tomcat/webapps/manager/WEB-INF/web.xml
+      ansible.builtin.template:
+        src: var/lib/tomcat/webapps/manager/WEB-INF/web.xml.j2
+        dest: /var/lib/tomcat/webapps/manager/WEB-INF/web.xml
+        owner: root
+        group: tomcat
+        mode: "0o664"
+      notify: "apache_tomcat: restart tomcat.service"
+      when:
+        - not apache_tomcat__skip_manager | d(false)
 
   tags:
-    - 'apache_tomcat'
-    - 'apache_tomcat:configure'
-    - 'apache_tomcat:users'
-
+    - apache_tomcat
+    - apache_tomcat:configure
 
 - block:
 
-  - name: 'systemctl {{ apache_tomcat__service_enabled | bool | ternary("enable", "disable") }} --now tomcat.service'
-    ansible.builtin.systemd:
-      name: 'tomcat.service'
-      enabled: '{{ apache_tomcat__service_enabled }}'
-      state: '{{ apache_tomcat__service_enabled | bool | ternary("started", "stopped") }}'
+    - name: "Combined Users:"
+      ansible.builtin.debug:
+        var: apache_tomcat__users__combined_var
+
+    - name: Deploy /etc/tomcat/tomcat-users.xml
+      ansible.builtin.template:
+        src: etc/tomcat/tomcat-users.xml.j2
+        dest: /etc/tomcat/tomcat-users.xml
+        owner: root
+        group: tomcat
+        mode: "0o640"
+      notify: "apache_tomcat: restart tomcat.service"
 
   tags:
-    - 'apache_tomcat'
-    - 'apache_tomcat:state'
+    - apache_tomcat
+    - apache_tomcat:configure
+    - apache_tomcat:users
+
+- block:
+
+    - name: systemctl {{ apache_tomcat__service_enabled | bool | ternary("enable", "disable") }} --now tomcat.service
+      ansible.builtin.systemd:
+        name: tomcat.service
+        enabled: "{{ apache_tomcat__service_enabled }}"
+        state: '{{ apache_tomcat__service_enabled | bool | ternary("started", "stopped") }}'
+
+  tags:
+    - apache_tomcat
+    - apache_tomcat:state

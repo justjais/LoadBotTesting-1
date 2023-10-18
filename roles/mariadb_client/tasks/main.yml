@@ -2,7 +2,6 @@
 - tags:
     - mariadb_client
   block:
-
     - name: Install mariadb (the MySQL command-line tool)
       ansible.builtin.package:
         name:

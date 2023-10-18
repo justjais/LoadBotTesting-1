@@ -2,7 +2,6 @@
 - tags:
     - repo_grafana
   block:
-
     - name: Curl https://packages.grafana.com/gpg.key -o /tmp/ansible.grafana.key
       ansible.builtin.get_url:
         url: https://packages.grafana.com/gpg.key

@@ -10,7 +10,6 @@
     - nfs_server
 
   block:
-
     - name: Install {{ nfs_server__nfs_server_package }}
       ansible.builtin.package:
         name: "{{ nfs_server__nfs_server_package }}"
@@ -21,7 +20,6 @@
     - nfs_server:state
 
   block:
-
     - name: Systemctl {{ nfs_server__service_enabled | bool | ternary("enable", "disable") }} --now nfs-server.service
       ansible.builtin.systemd:
         name: nfs-server.service
@@ -32,7 +30,6 @@
     - nfs_server
     - nfs_server:exports
   block:
-
     - name: Ensure directories to export exist
       ansible.builtin.file:
         path: "{{ item.strip().split()[0] }}"

@@ -1,21 +1,22 @@
+---
 - block:
 
-  - name: 'Install python{{ python__version }}'
-    ansible.builtin.package:
-      name:
-        - 'python{{ python__version }}'
-      state: 'present'
+    - name: Install python{{ python__version }}
+      ansible.builtin.package:
+        name:
+          - python{{ python__version }}
+        state: present
 
-  - name: 'Combined Modules:'
-    ansible.builtin.debug:
-      var: 'python__modules__combined_var'
+    - name: "Combined Modules:"
+      ansible.builtin.debug:
+        var: python__modules__combined_var
 
-  - name: 'Install additional python modules'
-    ansible.builtin.package:
-      name: "{{ python__modules__combined_var }}"
-      state: 'present'
+    - name: Install additional python modules
+      ansible.builtin.package:
+        name: "{{ python__modules__combined_var }}"
+        state: present
 
   # block
-  when: 'ansible_facts["os_family"] != "Windows"'
+  when: ansible_facts["os_family"] != "Windows"
   tags:
-    - 'python'
+    - python

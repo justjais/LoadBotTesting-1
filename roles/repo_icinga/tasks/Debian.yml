@@ -1,29 +1,30 @@
+---
 - block:
 
-  - name: 'apt install ... # required packages'
-    ansible.builtin.package:
-      name: '{{ repo_icinga__required_packages }}'
-      state: 'present'
+    - name: "apt install ... # required packages"
+      ansible.builtin.package:
+        name: "{{ repo_icinga__required_packages }}"
+        state: present
 
-  - name: 'Add Apt signing key for icinga repository'
-    ansible.builtin.apt_key:
-      url: 'https://packages.icinga.com/icinga.key'
-      state: 'present'
+    - name: Add Apt signing key for icinga repository
+      ansible.builtin.apt_key:
+        url: https://packages.icinga.com/icinga.key
+        state: present
 
-  - name: 'Deploy the icinga repo (mirror: {{ repo_icinga__mirror_url }})'
-    ansible.builtin.template:
-      src: 'etc/apt/sources.list.d/packages_icinga_com_debian.list.j2'
-      dest: '/etc/apt/sources.list.d/packages_icinga_com_debian.list'
-      owner: 'root'
-      group: 'root'
-      mode: 0o644
+    - name: "Deploy the icinga repo (mirror: {{ repo_icinga__mirror_url }})"
+      ansible.builtin.template:
+        src: etc/apt/sources.list.d/packages_icinga_com_debian.list.j2
+        dest: /etc/apt/sources.list.d/packages_icinga_com_debian.list
+        owner: root
+        group: root
+        mode: "0o644"
 
-  - name: 'Add additional repositories needed by Icinga on Debian'
-    ansible.builtin.apt_repository:
-      repo: '{{ item }}'
-      validate_certs: false
-      state: 'present'
-    loop: '{{ repo_icinga__additional_repo_urls }}'
+    - name: Add additional repositories needed by Icinga on Debian
+      ansible.builtin.apt_repository:
+        repo: "{{ item }}"
+        validate_certs: false
+        state: present
+      loop: "{{ repo_icinga__additional_repo_urls }}"
 
   tags:
-    - 'repo_icinga'
+    - repo_icinga

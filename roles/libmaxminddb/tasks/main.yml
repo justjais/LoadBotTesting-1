@@ -1,61 +1,63 @@
+---
 - block:
 
-  - name: 'install gcc httpd-devel make tar'
-    ansible.builtin.package:
-      name:
-        - 'gcc'
-        - 'httpd-devel'
-        - 'make'
-        - 'tar'
-      state: 'present'
+    - name: install gcc httpd-devel make tar
+      ansible.builtin.package:
+        name:
+          - gcc
+          - httpd-devel
+          - make
+          - tar
+        state: present
 
-  - name: 'curl https://github.com/maxmind/libmaxminddb/releases/download/{{ libmaxminddb__version }}/libmaxminddb-{{ libmaxminddb__version }}.tar.gz --output /tmp/libmaxminddb-{{ libmaxminddb__version }}.tar.gz'
-    ansible.builtin.get_url:
-      url: 'https://github.com/maxmind/libmaxminddb/releases/download/{{ libmaxminddb__version }}/libmaxminddb-{{ libmaxminddb__version }}.tar.gz'
-      dest: '/tmp/libmaxminddb-{{ libmaxminddb__version }}.tar.gz'
-    delegate_to: 'localhost'
-    run_once: true
-    check_mode: false # run task even if `--check` is specified
+    - name: curl https://github.com/maxmind/libmaxminddb/releases/download/{{ libmaxminddb__version }}/libmaxminddb-{{ libmaxminddb__version }}.tar.gz --output /tmp/libmaxminddb-{{
+        libmaxminddb__version }}.tar.gz
+      ansible.builtin.get_url:
+        url: https://github.com/maxmind/libmaxminddb/releases/download/{{ libmaxminddb__version }}/libmaxminddb-{{ libmaxminddb__version }}.tar.gz
+        dest: /tmp/libmaxminddb-{{ libmaxminddb__version }}.tar.gz
+      delegate_to: localhost
+      run_once: true
+      check_mode: false # run task even if `--check` is specified
 
-  - name: 'mkdir -p {{ ansible_env["HOME"] }}/libmaxminddb-{{ libmaxminddb__version }}'
-    ansible.builtin.file:
-      path: '{{ ansible_env["HOME"] }}/libmaxminddb-{{ libmaxminddb__version }}'
-      state: 'directory'
+    - name: mkdir -p {{ ansible_env["HOME"] }}/libmaxminddb-{{ libmaxminddb__version }}
+      ansible.builtin.file:
+        path: '{{ ansible_env["HOME"] }}/libmaxminddb-{{ libmaxminddb__version }}'
+        state: directory
 
-  - name: 'tar xfz --strip-components 1 -C {{ ansible_env["HOME"] }}/libmaxminddb-{{ libmaxminddb__version }} /tmp/libmaxminddb-{{ libmaxminddb__version }}.tar.gz'
-    ansible.builtin.unarchive:
-      src: '/tmp/libmaxminddb-{{ libmaxminddb__version }}.tar.gz'
-      dest: '{{ ansible_env["HOME"] }}/libmaxminddb-{{ libmaxminddb__version }}'
-      remote_src: false
-      extra_opts:
-        - '--strip-components=1'
+    - name: tar xfz --strip-components 1 -C {{ ansible_env["HOME"] }}/libmaxminddb-{{ libmaxminddb__version }} /tmp/libmaxminddb-{{ libmaxminddb__version }}.tar.gz
+      ansible.builtin.unarchive:
+        src: /tmp/libmaxminddb-{{ libmaxminddb__version }}.tar.gz
+        dest: '{{ ansible_env["HOME"] }}/libmaxminddb-{{ libmaxminddb__version }}'
+        remote_src: false
+        extra_opts:
+          - --strip-components=1
 
-  - name: './configure'
-    ansible.builtin.command: './configure'
-    args:
-      chdir: '{{ ansible_env["HOME"] }}/libmaxminddb-{{ libmaxminddb__version }}'
+    - name: ./configure
+      ansible.builtin.command: ./configure
+      args:
+        chdir: '{{ ansible_env["HOME"] }}/libmaxminddb-{{ libmaxminddb__version }}'
 
-  - name: 'make'
-    ansible.builtin.make:
-      chdir: '{{ ansible_env["HOME"] }}/libmaxminddb-{{ libmaxminddb__version }}'
+    - name: make
+      ansible.builtin.make:
+        chdir: '{{ ansible_env["HOME"] }}/libmaxminddb-{{ libmaxminddb__version }}'
 
-  - name: 'make check'
-    ansible.builtin.make:
-      chdir: '{{ ansible_env["HOME"] }}/libmaxminddb-{{ libmaxminddb__version }}'
-      target: 'check'
+    - name: make check
+      ansible.builtin.make:
+        chdir: '{{ ansible_env["HOME"] }}/libmaxminddb-{{ libmaxminddb__version }}'
+        target: check
 
-  - name: 'make install'
-    ansible.builtin.make:
-      chdir: '{{ ansible_env["HOME"] }}/libmaxminddb-{{ libmaxminddb__version }}'
-      target: 'install'
+    - name: make install
+      ansible.builtin.make:
+        chdir: '{{ ansible_env["HOME"] }}/libmaxminddb-{{ libmaxminddb__version }}'
+        target: install
 
-  - name: 'Configure Dynamic Linker Run Time Bindings'
-    ansible.builtin.copy:
-      dest: '/etc/ld.so.conf.d/local.conf'
-      content: '/usr/local/lib'
+    - name: Configure Dynamic Linker Run Time Bindings
+      ansible.builtin.copy:
+        dest: /etc/ld.so.conf.d/local.conf
+        content: /usr/local/lib
 
-  - name: 'ldconfig'
-    ansible.builtin.command: 'ldconfig'
+    - name: ldconfig
+      ansible.builtin.command: ldconfig
 
   tags:
-    - 'libmaxminddb'
+    - libmaxminddb

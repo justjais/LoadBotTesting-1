@@ -1,459 +1,454 @@
+---
 - block:
 
-  - name: 'Make sure that Ansible local facts directory exists'
-    ansible.builtin.file:
-      path: '/etc/ansible/facts.d'
-      state: 'directory'
-      owner: 'root'
-      group: 'root'
-      mode: 0o755
+    - name: Make sure that Ansible local facts directory exists
+      ansible.builtin.file:
+        path: /etc/ansible/facts.d
+        state: directory
+        owner: root
+        group: root
+        mode: "0o755"
 
   tags:
-    - 'nextcloud'
-
+    - nextcloud
 
 - block:
 
-  - name: 'Install bzip2 jq openldap-clients samba-client'
-    ansible.builtin.package:
-      name:
-        - 'bzip2'
-        - 'jq'
-        - 'openldap-clients'
-        - 'samba-client'
-      state: 'present'
+    - name: Install bzip2 jq openldap-clients samba-client
+      ansible.builtin.package:
+        name:
+          - bzip2
+          - jq
+          - openldap-clients
+          - samba-client
+        state: present
 
-  - name: 'wget https://download.nextcloud.com/server/releases/{{ nextcloud__version }}.tar.bz2'
-    ansible.builtin.get_url:
-      url: 'https://download.nextcloud.com/server/releases/{{ nextcloud__version }}.tar.bz2'
-      dest: '/tmp/nextcloud-{{ nextcloud__version }}.tar.bz2'
+    - name: wget https://download.nextcloud.com/server/releases/{{ nextcloud__version }}.tar.bz2
+      ansible.builtin.get_url:
+        url: https://download.nextcloud.com/server/releases/{{ nextcloud__version }}.tar.bz2
+        dest: /tmp/nextcloud-{{ nextcloud__version }}.tar.bz2
 
-  - name: 'bunzip /tmp/nextcloud-{{ nextcloud__version }}.tar.bz2 /var/www/html/'
-    ansible.builtin.unarchive:
-      src: '/tmp/nextcloud-{{ nextcloud__version }}.tar.bz2'
-      dest: '/var/www/html/'
-      remote_src: true
-      creates: '/var/www/html/nextcloud/config'
+    - name: bunzip /tmp/nextcloud-{{ nextcloud__version }}.tar.bz2 /var/www/html/
+      ansible.builtin.unarchive:
+        src: /tmp/nextcloud-{{ nextcloud__version }}.tar.bz2
+        dest: /var/www/html/
+        remote_src: true
+        creates: /var/www/html/nextcloud/config
 
-  - name: 'Storage Backend: Deploy /var/www/html/nextcloud/config/objectstore.config.php'
-    ansible.builtin.template:
-      src: 'var/www/html/nextcloud/config/objectstore.config.php.j2'
-      dest: '/var/www/html/nextcloud/config/objectstore.config.php'
-      owner: 'apache'
-      group: 'apache'
-      mode: 0o644
-    when: '(nextcloud__storage_backend_s3["bucket"] is defined and nextcloud__storage_backend_s3["bucket"] | length)
-          or (nextcloud__storage_backend_swift["bucket"] is defined and nextcloud__storage_backend_swift["bucket"] | length)'
+    - name: "Storage Backend: Deploy /var/www/html/nextcloud/config/objectstore.config.php"
+      ansible.builtin.template:
+        src: var/www/html/nextcloud/config/objectstore.config.php.j2
+        dest: /var/www/html/nextcloud/config/objectstore.config.php
+        owner: apache
+        group: apache
+        mode: "0o644"
+      when: (nextcloud__storage_backend_s3["bucket"] is defined and nextcloud__storage_backend_s3["bucket"] | length) or (nextcloud__storage_backend_swift["bucket"]
+        is defined and nextcloud__storage_backend_swift["bucket"] | length)
 
-  - name: 'chown -R apache:apache /var/www/html/nextcloud'
-    ansible.builtin.file:
-      path: '/var/www/html/nextcloud'
-      owner: 'apache'
-      group: 'apache'
-      recurse: true
+    - name: chown -R apache:apache /var/www/html/nextcloud
+      ansible.builtin.file:
+        path: /var/www/html/nextcloud
+        owner: apache
+        group: apache
+        recurse: true
 
-  - name: 'mkdir path/to/data; chown -R apache:apache path/to/data; chmod 0750 -R path/to/data'
-    ansible.builtin.file:
-      path: '{{ item }}'
-      state: 'directory'
-      owner: 'apache'
-      group: 'apache'
-      mode: 0o750
-    loop:
-      - '/data'
-      - '/var/www/html/nextcloud/data'
+    - name: mkdir path/to/data; chown -R apache:apache path/to/data; chmod 0750 -R path/to/data
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        owner: apache
+        group: apache
+        mode: "0o750"
+      loop:
+        - /data
+        - /var/www/html/nextcloud/data
 
-  - name: 'chmod +x /var/www/html/nextcloud/occ'
-    ansible.builtin.file:
-      path: '/var/www/html/nextcloud/occ'
-      mode: 0o755
+    - name: chmod +x /var/www/html/nextcloud/occ
+      ansible.builtin.file:
+        path: /var/www/html/nextcloud/occ
+        mode: "0o755"
 
-  - name: 'restorecon -Fvr ...'
-    ansible.builtin.command: 'restorecon -Fvr {{ item }}'
-    register: 'nextcloud__restorecon_nextcloud_result'
-    changed_when: 'nextcloud__restorecon_nextcloud_result["stdout"] | length'
-    loop:
-      - '/data'
-      - '/var/www/html/nextcloud'
+    - name: restorecon -Fvr ...
+      ansible.builtin.command: restorecon -Fvr {{ item }}
+      register: nextcloud__restorecon_nextcloud_result
+      changed_when: nextcloud__restorecon_nextcloud_result["stdout"] | length
+      loop:
+        - /data
+        - /var/www/html/nextcloud
 
-  - name: 'Run nextcloud installer'
+    - name: Run nextcloud installer
     # installation hangs without "--admin-user" and "--admin-pass"
-    ansible.builtin.command: >-
-      sudo -u apache php occ maintenance:install
-        --admin-pass '{{ nextcloud__users.0.password }}'
-        --admin-user '{{ nextcloud__users.0.username }}'
-        --data-dir '{{ nextcloud__datadir }}'
-        --database 'mysql'
-        --database-host '{{ nextcloud__database_host }}'
-        --database-name '{{ nextcloud__database_name }}'
-        --database-user '{{ nextcloud__mariadb_login.username }}'
-        --database-pass '{{ nextcloud__mariadb_login.password }}'
-    args:
-      chdir: '/var/www/html/nextcloud/'
-      creates: '/var/www/html/nextcloud/config/config.php'
+      ansible.builtin.command: >-
+        sudo -u apache php occ maintenance:install
+          --admin-pass '{{ nextcloud__users.0.password }}'
+          --admin-user '{{ nextcloud__users.0.username }}'
+          --data-dir '{{ nextcloud__datadir }}'
+          --database 'mysql'
+          --database-host '{{ nextcloud__database_host }}'
+          --database-name '{{ nextcloud__database_name }}'
+          --database-user '{{ nextcloud__mariadb_login.username }}'
+          --database-pass '{{ nextcloud__mariadb_login.password }}'
+      args:
+        chdir: /var/www/html/nextcloud/
+        creates: /var/www/html/nextcloud/config/config.php
 
-  - name: 'Convert some database columns to big int'
-    ansible.builtin.command: |
-      sudo -u apache php occ db:convert-filecache-bigint --no-interaction
-    args:
-      chdir: '/var/www/html/nextcloud/'
-    register: 'nextcloud__convert_filecache_bigint_result'
-    changed_when: '"All tables already up to date" not in nextcloud__convert_filecache_bigint_result["stdout"]'
+    - name: Convert some database columns to big int
+      ansible.builtin.command: |
+        sudo -u apache php occ db:convert-filecache-bigint --no-interaction
+      args:
+        chdir: /var/www/html/nextcloud/
+      register: nextcloud__convert_filecache_bigint_result
+      changed_when: '"All tables already up to date" not in nextcloud__convert_filecache_bigint_result["stdout"]'
     # changed_when: there is no easy way to check for changes
 
-  - name: 'Set Nextcloud system settings'
-    ansible.builtin.command: |
-      sudo -u apache php occ config:system:set {{ item["key"] }} {{ item["value"] }}
-    loop: '{{ nextcloud__sysconfig }}'
-    args:
-      chdir: '/var/www/html/nextcloud/'
+    - name: Set Nextcloud system settings
+      ansible.builtin.command: |
+        sudo -u apache php occ config:system:set {{ item["key"] }} {{ item["value"] }}
+      loop: "{{ nextcloud__sysconfig }}"
+      args:
+        chdir: /var/www/html/nextcloud/
     # changed_when: there is no easy way to check for changes
 
-  - name: 'Set Nextcloud proxy settings'
-    ansible.builtin.command: |
-      sudo -u apache php occ config:system:set {{ item["key"] }} {{ item["value"] }}
-    loop: '{{ nextcloud__proxyconfig }}'
-    when:
-      - 'nextcloud__proxyconfig is defined'
-      - 'nextcloud__proxyconfig | length'
-    args:
-      chdir: '/var/www/html/nextcloud/'
+    - name: Set Nextcloud proxy settings
+      ansible.builtin.command: |
+        sudo -u apache php occ config:system:set {{ item["key"] }} {{ item["value"] }}
+      loop: "{{ nextcloud__proxyconfig }}"
+      when:
+        - nextcloud__proxyconfig is defined
+        - nextcloud__proxyconfig | length
+      args:
+        chdir: /var/www/html/nextcloud/
     # changed_when: there is no easy way to check for changes
 
-  # do this straight after the installation to get NC up and running
-  # otherwise subsequent occ commands might fail
-  - name: 'nextcloud: restart php-fpm'
-    ansible.builtin.service:
-      name: 'php-fpm'
-      state: 'restarted'
+    # do this straight after the installation to get NC up and running
+    # otherwise subsequent occ commands might fail
+    - name: "nextcloud: restart php-fpm"
+      ansible.builtin.service:
+        name: php-fpm
+        state: restarted
 
   tags:
-    - 'nextcloud'
-
+    - nextcloud
 
 - block:
 
-  - name: 'Register if role state file exists'
-    ansible.builtin.stat:
-      path: '/etc/ansible/facts.d/nextcloud__app_install.state'
-    register: 'nextcloud__app_install_state'
+    - name: Register if role state file exists
+      ansible.builtin.stat:
+        path: /etc/ansible/facts.d/nextcloud__app_install.state
+      register: nextcloud__app_install_state
 
   tags:
-    - 'nextcloud'
-
+    - nextcloud
 
 - block:
 
-  - name: 'Disable every possible Nextcloud App on initial setup, but do this only once'
-    ansible.builtin.command: |
-      sudo -u apache php occ app:disable {{ item }}
-    loop:
+    - name: Disable every possible Nextcloud App on initial setup, but do this only once
+      ansible.builtin.command: |
+        sudo -u apache php occ app:disable {{ item }}
+      loop:
       # commented modules are default, and can't be disabled
-      - 'accessibility'
-      - 'activity'
-      - 'circles'
-      # - 'cloud_federation_api'
-      - 'comments'
-      - 'contactsinteraction'
-      - 'dashboard'
-      # - 'dav'
-      # - 'federatedfilesharing'
-      - 'federation'
-      # - 'files'
-      - 'files_pdfviewer'
-      - 'files_rightclick'
-      - 'files_sharing'
-      - 'files_trashbin'
-      - 'files_versions'
-      - 'files_videoplayer'
-      - 'firstrunwizard'
-      - 'logreader'
-      # - 'lookup_server_connector'
-      - 'nextcloud_announcements'
-      - 'notifications'
-      # - 'oauth2'
-      - 'password_policy'
-      - 'photos'
-      - 'privacy'
-      # - 'provisioning_api'
-      - 'recommendations'
-      - 'serverinfo'
-      # - 'settings'
-      - 'sharebymail'
-      - 'support'
-      - 'survey_client'
-      - 'systemtags'
-      - 'text'
-      - 'theming'
-      # - 'twofactor_backupcodes'
-      - 'updatenotification'
-      - 'user_status'
-      # - 'viewer'
-      - 'weather_status'
+        - accessibility
+        - activity
+        - circles
+        # - 'cloud_federation_api'
+        - comments
+        - contactsinteraction
+        - dashboard
+        # - 'dav'
+        # - 'federatedfilesharing'
+        - federation
+        # - 'files'
+        - files_pdfviewer
+        - files_rightclick
+        - files_sharing
+        - files_trashbin
+        - files_versions
+        - files_videoplayer
+        - firstrunwizard
+        - logreader
+        # - 'lookup_server_connector'
+        - nextcloud_announcements
+        - notifications
+        # - 'oauth2'
+        - password_policy
+        - photos
+        - privacy
+        # - 'provisioning_api'
+        - recommendations
+        - serverinfo
+        # - 'settings'
+        - sharebymail
+        - support
+        - survey_client
+        - systemtags
+        - text
+        - theming
+        # - 'twofactor_backupcodes'
+        - updatenotification
+        - user_status
+        # - 'viewer'
+        - weather_status
       # - 'workflowengine'
-    args:
-      chdir: '/var/www/html/nextcloud/'
-    ignore_errors: true
+      args:
+        chdir: /var/www/html/nextcloud/
+      ignore_errors: true
 
-  - name: 'Install and enable Nextcloud Apps on initial setup, but do this only once'
-    ansible.builtin.command: |
-      sudo -u apache php occ app:install {{ item }}
-    loop:
-      - 'bruteforcesettings'
-    args:
-      chdir: '/var/www/html/nextcloud/'
-    ignore_errors: true
+    - name: Install and enable Nextcloud Apps on initial setup, but do this only once
+      ansible.builtin.command: |
+        sudo -u apache php occ app:install {{ item }}
+      loop:
+        - bruteforcesettings
+      args:
+        chdir: /var/www/html/nextcloud/
+      ignore_errors: true
 
-  - name: 'Enable a subset of pre-installed Nextcloud Apps on initial setup, but do this only once'
-    ansible.builtin.command: |
-      sudo -u apache php occ app:enable {{ item }}
-    loop:
-      - 'files_pdfviewer'
-      - 'files_rightclick'
-      - 'files_sharing'
-      - 'files_trashbin'
-      - 'files_versions'
-      - 'files_videoplayer'
-      - 'password_policy'
-      - 'serverinfo'
-      - 'sharebymail'
-      - 'text'
-      - 'theming'
-    args:
-      chdir: '/var/www/html/nextcloud/'
-    ignore_errors: true
+    - name: Enable a subset of pre-installed Nextcloud Apps on initial setup, but do this only once
+      ansible.builtin.command: |
+        sudo -u apache php occ app:enable {{ item }}
+      loop:
+        - files_pdfviewer
+        - files_rightclick
+        - files_sharing
+        - files_trashbin
+        - files_versions
+        - files_videoplayer
+        - password_policy
+        - serverinfo
+        - sharebymail
+        - text
+        - theming
+      args:
+        chdir: /var/www/html/nextcloud/
+      ignore_errors: true
 
-  - name: 'Create a role state file'
-    ansible.builtin.file:
-      dest: '/etc/ansible/facts.d/nextcloud__app_install.state'
-      owner: 'root'
-      group: 'root'
-      mode: '0600'
-      state: 'touch'
+    - name: Create a role state file
+      ansible.builtin.file:
+        dest: /etc/ansible/facts.d/nextcloud__app_install.state
+        owner: root
+        group: root
+        mode: "0600"
+        state: touch
 
   when:
-    - 'not nextcloud__app_install_state.stat.exists'
+    - not nextcloud__app_install_state.stat.exists
   tags:
-    - 'nextcloud'
-
+    - nextcloud
 
 - block:
 
-  - name: 'Disable Nextcloud Apps'
-    ansible.builtin.command: |
-      sudo -u apache php occ app:disable {{ item }}
-    loop: '{{ nextcloud__apps | selectattr("state", "defined") | selectattr("state", "eq", "absent") | map(attribute="name") }}'
-    args:
-      chdir: '/var/www/html/nextcloud/'
-    ignore_errors: true
+    - name: Disable Nextcloud Apps
+      ansible.builtin.command: |
+        sudo -u apache php occ app:disable {{ item }}
+      loop: '{{ nextcloud__apps | selectattr("state", "defined") | selectattr("state", "eq", "absent") | map(attribute="name") }}'
+      args:
+        chdir: /var/www/html/nextcloud/
+      ignore_errors: true
 
-  - name: 'Install Nextcloud Apps'
-    ansible.builtin.command: |
-      sudo -u apache php occ app:install {{ item }}
-    loop: '{{ (nextcloud__apps | selectattr("state", "defined") | selectattr("state", "ne", "absent") | map(attribute="name"))
-          + (nextcloud__apps | selectattr("state", "undefined") | map(attribute="name")) }}'
-    args:
-      chdir: '/var/www/html/nextcloud/'
-    ignore_errors: true
+    - name: Install Nextcloud Apps
+      ansible.builtin.command: |
+        sudo -u apache php occ app:install {{ item }}
+      loop: '{{ (nextcloud__apps | selectattr("state", "defined") | selectattr("state", "ne", "absent") | map(attribute="name")) + (nextcloud__apps | selectattr("state",
+        "undefined") | map(attribute="name")) }}'
+      args:
+        chdir: /var/www/html/nextcloud/
+      ignore_errors: true
 
-  - name: 'Enable Nextcloud Apps'
-    ansible.builtin.command: |
-      sudo -u apache php occ app:enable {{ item }}
-    loop: '{{ (nextcloud__apps | selectattr("state", "defined") | selectattr("state", "ne", "absent") | map(attribute="name"))
-          + (nextcloud__apps | selectattr("state", "undefined") | map(attribute="name")) }}'
-    args:
-      chdir: '/var/www/html/nextcloud/'
-    ignore_errors: true
+    - name: Enable Nextcloud Apps
+      ansible.builtin.command: |
+        sudo -u apache php occ app:enable {{ item }}
+      loop: '{{ (nextcloud__apps | selectattr("state", "defined") | selectattr("state", "ne", "absent") | map(attribute="name")) + (nextcloud__apps | selectattr("state",
+        "undefined") | map(attribute="name")) }}'
+      args:
+        chdir: /var/www/html/nextcloud/
+      ignore_errors: true
 
-  - name: 'Set Nextcloud App Settings'
-    ansible.builtin.command: |
-      sudo -u apache php occ config:app:set {{ item["key"] }} {{ item["value"] }}
-    loop: '{{ nextcloud__apps_config }}'
-    args:
-      chdir: '/var/www/html/nextcloud/'
-    ignore_errors: true
+    - name: Set Nextcloud App Settings
+      ansible.builtin.command: |
+        sudo -u apache php occ config:app:set {{ item["key"] }} {{ item["value"] }}
+      loop: "{{ nextcloud__apps_config }}"
+      args:
+        chdir: /var/www/html/nextcloud/
+      ignore_errors: true
 
-  - name: 'nextcloud: restart php-fpm'
-    ansible.builtin.service:
-      name: 'php-fpm'
-      state: 'restarted'
+    - name: "nextcloud: restart php-fpm"
+      ansible.builtin.service:
+        name: php-fpm
+        state: restarted
 
   tags:
-    - 'nextcloud'
-    - 'nextcloud:apps'
-
+    - nextcloud
+    - nextcloud:apps
 
 - block:
 
-  # nested loop construct (for user in users; for setting in user.settings; ...)
-  - ansible.builtin.include_tasks: 'create-user.yml'
-    loop: '{{ nextcloud__users }}'
-    loop_control:
-      loop_var: 'ncuser'
+    # nested loop construct (for user in users; for setting in user.settings; ...)
+    - ansible.builtin.include_tasks: create-user.yml
+      loop: "{{ nextcloud__users }}"
+      loop_control:
+        loop_var: ncuser
 
   tags:
-    - 'nextcloud'
-    - 'nextcloud:user'
-
+    - nextcloud
+    - nextcloud:user
 
 - block:
 
-  - name: 'chown -R apache:apache /var/www/html/nextcloud'
-    ansible.builtin.file:
-      path: '/var/www/html/nextcloud'
-      owner: 'apache'
-      group: 'apache'
-      recurse: true
+    - name: chown -R apache:apache /var/www/html/nextcloud
+      ansible.builtin.file:
+        path: /var/www/html/nextcloud
+        owner: apache
+        group: apache
+        recurse: true
 
   tags:
-    - 'nextcloud'
-
+    - nextcloud
 
 - block:
 
-  - name: 'Deploy /etc/systemd/system/nextcloud-jobs.service'
-    ansible.builtin.template:
-      src: 'etc/systemd/system/nextcloud-jobs.service.j2'
-      dest: '/etc/systemd/system/nextcloud-jobs.service'
-      owner: 'root'
-      group: 'root'
-      mode: 0o644
-    notify: 'nextcloud: systemctl daemon-reload'
+    - name: Deploy /etc/systemd/system/nextcloud-jobs.service
+      ansible.builtin.template:
+        src: etc/systemd/system/nextcloud-jobs.service.j2
+        dest: /etc/systemd/system/nextcloud-jobs.service
+        owner: root
+        group: root
+        mode: "0o644"
+      notify: "nextcloud: systemctl daemon-reload"
 
-  - name: 'Deploy /etc/systemd/system/nextcloud-jobs.timer'
-    ansible.builtin.template:
-      src: 'etc/systemd/system/nextcloud-jobs.timer.j2'
-      dest: '/etc/systemd/system/nextcloud-jobs.timer'
-      owner: 'root'
-      group: 'root'
-      mode: 0o644
-    notify: 'nextcloud: systemctl daemon-reload'
+    - name: Deploy /etc/systemd/system/nextcloud-jobs.timer
+      ansible.builtin.template:
+        src: etc/systemd/system/nextcloud-jobs.timer.j2
+        dest: /etc/systemd/system/nextcloud-jobs.timer
+        owner: root
+        group: root
+        mode: "0o644"
+      notify: "nextcloud: systemctl daemon-reload"
 
-  - name: 'Set background job to "cron"'
-    ansible.builtin.command: |
-      sudo -u apache php occ background:cron
-    args:
-      chdir: '/var/www/html/nextcloud/'
+    - name: Set background job to "cron"
+      ansible.builtin.command: |
+        sudo -u apache php occ background:cron
+      args:
+        chdir: /var/www/html/nextcloud/
     # changed_when: there is no easy way to check for changes
 
-  - name: 'Deploy /etc/systemd/system/nextcloud-app-update.service'
-    ansible.builtin.template:
-      src: 'etc/systemd/system/nextcloud-app-update.service.j2'
-      dest: '/etc/systemd/system/nextcloud-app-update.service'
-      owner: 'root'
-      group: 'root'
-      mode: 0o644
-    notify: 'nextcloud: systemctl daemon-reload'
+    - name: Deploy /etc/systemd/system/nextcloud-app-update.service
+      ansible.builtin.template:
+        src: etc/systemd/system/nextcloud-app-update.service.j2
+        dest: /etc/systemd/system/nextcloud-app-update.service
+        owner: root
+        group: root
+        mode: "0o644"
+      notify: "nextcloud: systemctl daemon-reload"
 
-  - name: 'Deploy /etc/systemd/system/nextcloud-app-update.timer'
-    ansible.builtin.template:
-      src: 'etc/systemd/system/nextcloud-app-update.timer.j2'
-      dest: '/etc/systemd/system/nextcloud-app-update.timer'
-      owner: 'root'
-      group: 'root'
-      mode: 0o644
-    notify: 'nextcloud: systemctl daemon-reload'
+    - name: Deploy /etc/systemd/system/nextcloud-app-update.timer
+      ansible.builtin.template:
+        src: etc/systemd/system/nextcloud-app-update.timer.j2
+        dest: /etc/systemd/system/nextcloud-app-update.timer
+        owner: root
+        group: root
+        mode: "0o644"
+      notify: "nextcloud: systemctl daemon-reload"
 
-  - name: 'Deploy /etc/systemd/system/nextcloud-scan-files.service'
-    ansible.builtin.template:
-      src: 'etc/systemd/system/nextcloud-scan-files.service.j2'
-      dest: '/etc/systemd/system/nextcloud-scan-files.service'
-      owner: 'root'
-      group: 'root'
-      mode: 0o644
-    notify: 'nextcloud: systemctl daemon-reload'
+    - name: Deploy /etc/systemd/system/nextcloud-scan-files.service
+      ansible.builtin.template:
+        src: etc/systemd/system/nextcloud-scan-files.service.j2
+        dest: /etc/systemd/system/nextcloud-scan-files.service
+        owner: root
+        group: root
+        mode: "0o644"
+      notify: "nextcloud: systemctl daemon-reload"
 
-  - name: 'Deploy /etc/systemd/system/nextcloud-scan-files.timer'
-    ansible.builtin.template:
-      src: 'etc/systemd/system/nextcloud-scan-files.timer.j2'
-      dest: '/etc/systemd/system/nextcloud-scan-files.timer'
-      owner: 'root'
-      group: 'root'
-      mode: 0o644
-    notify: 'nextcloud: systemctl daemon-reload'
+    - name: Deploy /etc/systemd/system/nextcloud-scan-files.timer
+      ansible.builtin.template:
+        src: etc/systemd/system/nextcloud-scan-files.timer.j2
+        dest: /etc/systemd/system/nextcloud-scan-files.timer
+        owner: root
+        group: root
+        mode: "0o644"
+      notify: "nextcloud: systemctl daemon-reload"
 
-  - name: 'Deploy /etc/systemd/system/nextcloud-ldap-show-remnants.service'
-    ansible.builtin.template:
-      src: 'etc/systemd/system/nextcloud-ldap-show-remnants.service.j2'
-      dest: '/etc/systemd/system/nextcloud-ldap-show-remnants.service'
-      owner: 'root'
-      group: 'root'
-      mode: 0o644
-    when:
-      - 'nextcloud__apps is defined'
-      - 'nextcloud__apps | selectattr("name", "defined") | selectattr("name", "eq", "user_ldap") | selectattr("state", "eq", "present") | map(attribute="name") | length'
-    notify: 'nextcloud: systemctl daemon-reload'
+    - name: Deploy /etc/systemd/system/nextcloud-ldap-show-remnants.service
+      ansible.builtin.template:
+        src: etc/systemd/system/nextcloud-ldap-show-remnants.service.j2
+        dest: /etc/systemd/system/nextcloud-ldap-show-remnants.service
+        owner: root
+        group: root
+        mode: "0o644"
+      when:
+        - nextcloud__apps is defined
+        - nextcloud__apps | selectattr("name", "defined") | selectattr("name", "eq", "user_ldap") | selectattr("state", "eq", "present") | map(attribute="name") |
+          length
+      notify: "nextcloud: systemctl daemon-reload"
 
-  - name: 'Deploy /etc/systemd/system/nextcloud-ldap-show-remnants.timer'
-    ansible.builtin.template:
-      src: 'etc/systemd/system/nextcloud-ldap-show-remnants.timer.j2'
-      dest: '/etc/systemd/system/nextcloud-ldap-show-remnants.timer'
-      owner: 'root'
-      group: 'root'
-      mode: 0o644
-    when:
-      - 'nextcloud__apps is defined'
-      - 'nextcloud__apps | selectattr("name", "defined") | selectattr("name", "eq", "user_ldap") | selectattr("state", "eq", "present") | map(attribute="name") | length'
-    notify: 'nextcloud: systemctl daemon-reload'
+    - name: Deploy /etc/systemd/system/nextcloud-ldap-show-remnants.timer
+      ansible.builtin.template:
+        src: etc/systemd/system/nextcloud-ldap-show-remnants.timer.j2
+        dest: /etc/systemd/system/nextcloud-ldap-show-remnants.timer
+        owner: root
+        group: root
+        mode: "0o644"
+      when:
+        - nextcloud__apps is defined
+        - nextcloud__apps | selectattr("name", "defined") | selectattr("name", "eq", "user_ldap") | selectattr("state", "eq", "present") | map(attribute="name") |
+          length
+      notify: "nextcloud: systemctl daemon-reload"
 
-  - name: 'Deploy /usr/local/bin/nextcloud-ldap-show-remnants'
-    ansible.builtin.template:
-      src: 'usr/local/bin/nextcloud-ldap-show-remnants.j2'
-      dest: '/usr/local/bin/nextcloud-ldap-show-remnants'
-      owner: 'root'
-      group: 'root'
-      mode: 0o755
+    - name: Deploy /usr/local/bin/nextcloud-ldap-show-remnants
+      ansible.builtin.template:
+        src: usr/local/bin/nextcloud-ldap-show-remnants.j2
+        dest: /usr/local/bin/nextcloud-ldap-show-remnants
+        owner: root
+        group: root
+        mode: "0o755"
 
   tags:
-    - 'nextcloud'
-    - 'nextcloud:cron'
-
+    - nextcloud
+    - nextcloud:cron
 
 - block:
 
-  - name: 'systemctl {{ nextcloud__timer_jobs_enabled | bool | ternary("enable", "disable") }} nextcloud-jobs.timer --now'
-    ansible.builtin.systemd:
-      name: 'nextcloud-jobs.timer'
-      state: '{{ nextcloud__timer_jobs_enabled | bool | ternary("started", "stopped") }}'
-      enabled: '{{ nextcloud__timer_jobs_enabled }}'
+    - name: systemctl {{ nextcloud__timer_jobs_enabled | bool | ternary("enable", "disable") }} nextcloud-jobs.timer --now
+      ansible.builtin.systemd:
+        name: nextcloud-jobs.timer
+        state: '{{ nextcloud__timer_jobs_enabled | bool | ternary("started", "stopped") }}'
+        enabled: "{{ nextcloud__timer_jobs_enabled }}"
 
-  - name: 'systemctl {{ nextcloud__timer_app_update_enabled | bool | ternary("enable", "disable") }} nextcloud-app-update.timer --now'
-    ansible.builtin.systemd:
-      name: 'nextcloud-app-update.timer'
-      state: '{{ nextcloud__timer_app_update_enabled | bool | ternary("started", "stopped") }}'
-      enabled: '{{ nextcloud__timer_app_update_enabled }}'
+    - name: systemctl {{ nextcloud__timer_app_update_enabled | bool | ternary("enable", "disable") }} nextcloud-app-update.timer --now
+      ansible.builtin.systemd:
+        name: nextcloud-app-update.timer
+        state: '{{ nextcloud__timer_app_update_enabled | bool | ternary("started", "stopped") }}'
+        enabled: "{{ nextcloud__timer_app_update_enabled }}"
 
-  - name: 'systemctl {{ nextcloud__timer_scan_files_enabled | bool | ternary("enable", "disable") }} nextcloud-scan-files.timer --now'
-    ansible.builtin.systemd:
-      name: 'nextcloud-scan-files.timer'
-      state: '{{ nextcloud__timer_scan_files_enabled | bool | ternary("started", "stopped") }}'
-      enabled: '{{ nextcloud__timer_scan_files_enabled }}'
+    - name: systemctl {{ nextcloud__timer_scan_files_enabled | bool | ternary("enable", "disable") }} nextcloud-scan-files.timer --now
+      ansible.builtin.systemd:
+        name: nextcloud-scan-files.timer
+        state: '{{ nextcloud__timer_scan_files_enabled | bool | ternary("started", "stopped") }}'
+        enabled: "{{ nextcloud__timer_scan_files_enabled }}"
 
-  - name: 'systemctl {{ nextcloud__timer_ldap_show_remnants_enabled | bool | ternary("enable", "disable") }} nextcloud-ldap-show-remnants.timer --now'
-    ansible.builtin.systemd:
-      name: 'nextcloud-ldap-show-remnants.timer'
-      state: '{{ nextcloud__timer_ldap_show_remnants_enabled | bool | ternary("started", "stopped") }}'
-      enabled: '{{ nextcloud__timer_ldap_show_remnants_enabled }}'
-    when:
-      - 'nextcloud__apps is defined'
-      - 'nextcloud__apps | selectattr("name", "defined") | selectattr("name", "eq", "user_ldap") | selectattr("state", "eq", "present") | map(attribute="name") | length'
+    - name: systemctl {{ nextcloud__timer_ldap_show_remnants_enabled | bool | ternary("enable", "disable") }} nextcloud-ldap-show-remnants.timer --now
+      ansible.builtin.systemd:
+        name: nextcloud-ldap-show-remnants.timer
+        state: '{{ nextcloud__timer_ldap_show_remnants_enabled | bool | ternary("started", "stopped") }}'
+        enabled: "{{ nextcloud__timer_ldap_show_remnants_enabled }}"
+      when:
+        - nextcloud__apps is defined
+        - nextcloud__apps | selectattr("name", "defined") | selectattr("name", "eq", "user_ldap") | selectattr("state", "eq", "present") | map(attribute="name") |
+          length
 
   tags:
-    - 'nextcloud'
-    - 'nextcloud:cron'
-    - 'nextcloud:state'
-
+    - nextcloud
+    - nextcloud:cron
+    - nextcloud:state
 
 - block:
 
-  - name: 'Deploy /usr/local/bin/nextcloud-update'
-    ansible.builtin.template:
-      src: 'usr/local/bin/nextcloud-update.j2'
-      dest: '/usr/local/bin/nextcloud-update'
-      owner: 'root'
-      group: 'root'
-      mode: 0o755
+    - name: Deploy /usr/local/bin/nextcloud-update
+      ansible.builtin.template:
+        src: usr/local/bin/nextcloud-update.j2
+        dest: /usr/local/bin/nextcloud-update
+        owner: root
+        group: root
+        mode: "0o755"
 
   tags:
-    - 'nextcloud'
-    - 'nextcloud:scripts'
+    - nextcloud
+    - nextcloud:scripts

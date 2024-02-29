@@ -2,7 +2,6 @@
 - tags:
     - freeipa_server
   block:
-
     - name: Check that the hostname has two-levels
       ansible.builtin.assert:
         that: ansible_facts["nodename"].split(".") | length >= 3

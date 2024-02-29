@@ -16,7 +16,6 @@
     - apache_httpd
 
   block:
-
     - name: "Base Packages:"
       ansible.builtin.debug:
         var: apache_httpd__base_packages
@@ -65,14 +64,12 @@
 
   # Manage global Apache config
   block:
-
     - ansible.builtin.include_tasks: mod_security_coreruleset.yml
 - tags:
     - apache_httpd
     - apache_httpd:config
 
   block:
-
     - name: Create or update global Apache configuration
       ansible.builtin.template:
         src: etc/httpd/conf/httpd.conf.j2
@@ -88,7 +85,6 @@
     - apache_httpd:mods
 
   block:
-
     - ansible.builtin.include_tasks: mods.yml
 
 - tags:
@@ -96,7 +92,6 @@
     - apache_httpd:config
 
   block:
-
     - ansible.builtin.include_tasks: confs.yml
 
 - tags:
@@ -104,7 +99,6 @@
     - apache_httpd:vhosts
 
   block:
-
     - ansible.builtin.include_tasks: vhosts.yml
 
 - tags:
@@ -112,7 +106,6 @@
     - apache_httpd:matomo
 
   block:
-
     - ansible.builtin.include_tasks: matomo.yml
 
 - tags:
@@ -120,7 +113,6 @@
 
   # Manage Systemd start and enable
   block:
-
     - name: "Chmod -R g-w {{ apache_httpd__config_path }} # enhance security a little bit"
       ansible.builtin.file:
         path: "{{ apache_httpd__config_path }}"
@@ -139,7 +131,6 @@
     - apache_httpd
     - apache_httpd:state
   block:
-
     - name: Ensure that httpd service is in a desired state
       ansible.builtin.systemd:
         name: "{{ apache_httpd__service_name }}"

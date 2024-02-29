@@ -1,4 +1,5 @@
+---
 repo_baseos__repo_files:
-  - 'CentOS8/etc/yum.repos.d/CentOS-Linux-AppStream.repo'
-  - 'CentOS8/etc/yum.repos.d/CentOS-Linux-BaseOS.repo'
-  - 'CentOS8/etc/yum.repos.d/CentOS-Linux-Extras.repo'
+  - CentOS8/etc/yum.repos.d/CentOS-Linux-AppStream.repo
+  - CentOS8/etc/yum.repos.d/CentOS-Linux-BaseOS.repo
+  - CentOS8/etc/yum.repos.d/CentOS-Linux-Extras.repo

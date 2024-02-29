@@ -2,7 +2,6 @@
 - tags:
     - repo_opensearch
   block:
-
     # https://www.opensearch.com/docs/v6.0/tutorial/install-opensearch-on-debian/
     - name: "Apt install gnupg # required for apt-key add"
       ansible.builtin.package:

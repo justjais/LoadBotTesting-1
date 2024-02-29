@@ -2,7 +2,6 @@
 - tags:
     - cloud_init
   block:
-
     - name: Remove cloud-init
       ansible.builtin.package:
         name: cloud-init

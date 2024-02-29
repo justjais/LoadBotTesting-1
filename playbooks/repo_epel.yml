@@ -1,11 +1,11 @@
-- name: 'Manage and configure the EPEL Repository'
+---
+- name: Manage and configure the EPEL Repository
   hosts:
-    - 'lfops_repo_epel'
+    - lfops_repo_epel
 
   roles:
-
-    - role: 'linuxfabrik.lfops.yum_utils'
+    - role: linuxfabrik.lfops.yum_utils
       when:
-        - 'not repo_epel__skip_yum_utils | d(false)'
+        - not repo_epel__skip_yum_utils | d(false)
 
-    - role: 'linuxfabrik.lfops.repo_epel'
+    - role: linuxfabrik.lfops.repo_epel

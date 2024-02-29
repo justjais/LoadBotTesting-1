@@ -1,15 +1,16 @@
+---
 icingaweb2_module_grafana__monitoring_plugins_version: '{{ lfops__monitoring_plugins_version | default("latest") }}'
 icingaweb2_module_grafana__skip_monitoring_plugins_graphs_config: false
-icingaweb2_module_grafana__theme: 'light'
-icingaweb2_module_grafana__url: '{{ grafana__root_url }}'
+icingaweb2_module_grafana__theme: light
+icingaweb2_module_grafana__url: "{{ grafana__root_url }}"
 
 # -----------------------------------------------------------------------------
 
 icingaweb2_module_grafana__icingaweb2__navigation_menu_entries__dependent_var:
-  - name: 'Grafana'
-    type: 'menu-item'
-    target: '_blank'
-    url: '{{ icingaweb2_module_grafana__url }}'
-    icon: 'gauge'
-    groups: '*'
-    owner: 'icinga-admin'
+  - name: Grafana
+    type: menu-item
+    target: _blank
+    url: "{{ icingaweb2_module_grafana__url }}"
+    icon: gauge
+    groups: "*"
+    owner: icinga-admin

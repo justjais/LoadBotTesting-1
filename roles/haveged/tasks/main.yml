@@ -1,26 +1,24 @@
+---
 - block:
-
-  - name: 'Install haveged'
-    ansible.builtin.package:
-      name: 'haveged'
-      state: 'present'
+    - name: Install haveged
+      ansible.builtin.package:
+        name: haveged
+        state: present
 
   tags:
-    - 'haveged'
-
+    - haveged
 
 - block:
+    - name: systemctl {{ haveged__service_enabled | bool | ternary("enable", "disable") }} haveged.service
+      ansible.builtin.systemd:
+        name: haveged.service
+        enabled: "{{ haveged__service_enabled }}"
 
-  - name: 'systemctl {{ haveged__service_enabled | bool | ternary("enable", "disable") }} haveged.service'
-    ansible.builtin.systemd:
-      name: 'haveged.service'
-      enabled: '{{ haveged__service_enabled }}'
-
-  - name: 'systemctl {{ haveged__service_state[:-2] }} haveged.service'
-    ansible.builtin.systemd:
-      name: 'haveged.service'
-      state: '{{ haveged__service_state }}'
+    - name: systemctl {{ haveged__service_state[:-2] }} haveged.service
+      ansible.builtin.systemd:
+        name: haveged.service
+        state: "{{ haveged__service_state }}"
 
   tags:
-    - 'haveged'
-    - 'haveged:state'
+    - haveged
+    - haveged:state

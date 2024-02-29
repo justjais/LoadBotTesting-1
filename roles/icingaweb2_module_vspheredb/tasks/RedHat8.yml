@@ -1,10 +1,10 @@
+---
 - block:
-
-  - name: 'install php-soap'
-    ansible.builtin.package:
-      name:
-        - 'php-soap'
-      state: 'present'
+    - name: install php-soap
+      ansible.builtin.package:
+        name:
+          - php-soap
+        state: present
 
   tags:
-    - 'icingaweb2_module_vspheredb'
+    - icingaweb2_module_vspheredb

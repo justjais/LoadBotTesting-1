@@ -1,2 +1,3 @@
-mod_maxminddb__apache_conf_modules_d: '/etc/httpd/conf.modules.d/20-mod_maxminddb.conf'
-mod_maxminddb__version: '1.2.0'
+---
+mod_maxminddb__apache_conf_modules_d: /etc/httpd/conf.modules.d/20-mod_maxminddb.conf
+mod_maxminddb__version: 1.2.0

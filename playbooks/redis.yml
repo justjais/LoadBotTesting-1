@@ -1,18 +1,18 @@
-- name: 'Manage and configure redis'
+---
+- name: Manage and configure redis
   hosts:
-    - 'lfops_redis'
+    - lfops_redis
 
   roles:
-
-    - role: 'linuxfabrik.lfops.kernel_settings'
-      kernel_settings__sysctl__dependent_var: '{{ redis__kernel_settings__sysctl__dependent_var | d([]) }}'
+    - role: linuxfabrik.lfops.kernel_settings
+      kernel_settings__sysctl__dependent_var: "{{ redis__kernel_settings__sysctl__dependent_var | d([]) }}"
       kernel_settings__transparent_hugepages__dependent_var: "{{ redis__kernel_settings__transparent_hugepages__dependent_var | d('') }}"
       when:
-        - 'not redis__skip_kernel_settings | d(false)'
+        - not redis__skip_kernel_settings | d(false)
 
-    - role: 'linuxfabrik.lfops.repo_remi'
+    - role: linuxfabrik.lfops.repo_remi
       when:
-        - 'ansible_facts["os_family"] == "RedHat"'
-        - 'not redis__skip_repo_remi | default(false)'
+        - ansible_facts["os_family"] == "RedHat"
+        - not redis__skip_repo_remi | default(false)
 
-    - role: 'linuxfabrik.lfops.redis'
+    - role: linuxfabrik.lfops.redis

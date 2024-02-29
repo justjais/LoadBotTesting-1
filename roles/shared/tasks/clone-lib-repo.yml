@@ -10,7 +10,6 @@
 - when: shared__lib_repo_version == "latest"
 
   block:
-
     - name: Get latest release version
       ansible.builtin.uri:
         url: https://api.github.com/repos/linuxfabrik/lib/releases/latest
@@ -24,7 +23,6 @@
 
 # block
 - block:
-
     - name: "Clone the lib git repo to localhost (version: {{ shared__lib_github_version }})"
       ansible.builtin.git:
         repo: https://github.com/Linuxfabrik/lib.git

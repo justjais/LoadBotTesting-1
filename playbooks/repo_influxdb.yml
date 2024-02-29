@@ -1,7 +1,7 @@
-- name: 'Manage and configure the InfluxDB repository'
+---
+- name: Manage and configure the InfluxDB repository
   hosts:
-    - 'lfops_repo_influxdb'
+    - lfops_repo_influxdb
 
   roles:
-
-    - role: 'linuxfabrik.lfops.repo_influxdb'
+    - role: linuxfabrik.lfops.repo_influxdb

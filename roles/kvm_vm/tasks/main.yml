@@ -4,7 +4,6 @@
     - kvm_vm
 
   block:
-
     - name: Get info on storage pools
       community.libvirt.virt_pool:
         command: info
@@ -16,7 +15,6 @@
     - kvm_vm
 
   block:
-
     - name: "Qemu-img create -f qcow2 -F qcow2 -b ... # create boot disk"
       ansible.builtin.command: >
         qemu-img create -f qcow2 -F qcow2 -b
@@ -50,7 +48,6 @@
         - kvm_vm__boot_disk_create_result is changed
 
       block:
-
         - name: Mkdtemp --directory --suffix=cloud-init
           ansible.builtin.tempfile:
             state: directory
@@ -166,7 +163,6 @@
 
   # cleanup
   block:
-
     - name: Set vm state to {{ kvm_vm__state }}
       community.libvirt.virt:
         name: "{{ kvm_vm__name }}"
@@ -179,7 +175,6 @@
   tags:
     - kvm_vm
   block:
-
     - name: Virsh destroy --domain {{ kvm_vm__name }}
       community.libvirt.virt:
         command: destroy

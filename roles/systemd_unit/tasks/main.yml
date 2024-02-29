@@ -1,132 +1,127 @@
+---
 - block:
+    - name: Remove service units from /etc/systemd/system
+      ansible.builtin.file:
+        path: /etc/systemd/system/{{ item["name"] }}.service
+        state: absent
+      when:
+        - item["state"] | d("present") == "absent"
+      loop: "{{ systemd_unit__services__combined_var }}"
+      notify: "systemd_unit: systemctl daemon-reload"
 
-  - name: 'Remove service units from /etc/systemd/system'
-    ansible.builtin.file:
-      path: '/etc/systemd/system/{{ item["name"] }}.service'
-      state: 'absent'
-    when:
-      - 'item["state"] | d("present") == "absent"'
-    loop: '{{ systemd_unit__services__combined_var }}'
-    notify: 'systemd_unit: systemctl daemon-reload'
-
-  - name: 'Deploy the service units to /etc/systemd/system'
-    ansible.builtin.template:
-      src: 'etc/systemd/system/service.j2'
-      dest: '/etc/systemd/system/{{ item["name"] }}.service'
-      owner: 'root'
-      group: 'root'
-      mode: 0o644
-    when:
-      - 'item["state"] | d("present") != "absent"'
-    loop: '{{ systemd_unit__services__combined_var }}'
-    notify: 'systemd_unit: systemctl daemon-reload'
+    - name: Deploy the service units to /etc/systemd/system
+      ansible.builtin.template:
+        src: etc/systemd/system/service.j2
+        dest: /etc/systemd/system/{{ item["name"] }}.service
+        owner: root
+        group: root
+        mode: "0o644"
+      when:
+        - item["state"] | d("present") != "absent"
+      loop: "{{ systemd_unit__services__combined_var }}"
+      notify: "systemd_unit: systemctl daemon-reload"
 
   tags:
-    - 'systemd_unit'
-    - 'systemd_unit:services'
-
-
-- block:
-
-  - name: 'Remove timer units from /etc/systemd/system'
-    ansible.builtin.file:
-      path: '/etc/systemd/system/{{ item["name"] }}.timer'
-      state: 'absent'
-    when:
-      - 'item["state"] | d("present") == "absent"'
-    loop: '{{ systemd_unit__timers__combined_var }}'
-    notify: 'systemd_unit: systemctl daemon-reload'
-
-  - name: 'Deploy the timer units to /etc/systemd/system'
-    ansible.builtin.template:
-      src: 'etc/systemd/system/timer.j2'
-      dest: '/etc/systemd/system/{{ item["name"] }}.timer'
-      owner: 'root'
-      group: 'root'
-      mode: 0o644
-    when:
-      - 'item["state"] | d("present") != "absent"'
-    loop: '{{ systemd_unit__timers__combined_var }}'
-    notify: 'systemd_unit: systemctl daemon-reload'
-
-  tags:
-    - 'systemd_unit'
-    - 'systemd_unit:timers'
-
+    - systemd_unit
+    - systemd_unit:services
 
 - block:
+    - name: Remove timer units from /etc/systemd/system
+      ansible.builtin.file:
+        path: /etc/systemd/system/{{ item["name"] }}.timer
+        state: absent
+      when:
+        - item["state"] | d("present") == "absent"
+      loop: "{{ systemd_unit__timers__combined_var }}"
+      notify: "systemd_unit: systemctl daemon-reload"
 
-  - name: 'Remove mount units from /etc/systemd/system'
-    ansible.builtin.file:
-      path: '/etc/systemd/system/{{ item["name"] }}.mount'
-      state: 'absent'
-    when:
-      - 'item["state"] | d("present") == "absent"'
-    loop: '{{ systemd_unit__mounts__combined_var }}'
-    notify: 'systemd_unit: systemctl daemon-reload'
-
-  - name: 'Deploy the mount units to /etc/systemd/system'
-    ansible.builtin.template:
-      src: 'etc/systemd/system/mount.j2'
-      dest: '/etc/systemd/system/{{ item["name"] }}.mount'
-      owner: 'root'
-      group: 'root'
-      mode: 0o644
-    when:
-      - 'item["state"] | d("present") != "absent"'
-    loop: '{{ systemd_unit__mounts__combined_var }}'
-    notify: 'systemd_unit: systemctl daemon-reload'
+    - name: Deploy the timer units to /etc/systemd/system
+      ansible.builtin.template:
+        src: etc/systemd/system/timer.j2
+        dest: /etc/systemd/system/{{ item["name"] }}.timer
+        owner: root
+        group: root
+        mode: "0o644"
+      when:
+        - item["state"] | d("present") != "absent"
+      loop: "{{ systemd_unit__timers__combined_var }}"
+      notify: "systemd_unit: systemctl daemon-reload"
 
   tags:
-    - 'systemd_unit'
-    - 'systemd_unit:mounts'
+    - systemd_unit
+    - systemd_unit:timers
 
 - block:
+    - name: Remove mount units from /etc/systemd/system
+      ansible.builtin.file:
+        path: /etc/systemd/system/{{ item["name"] }}.mount
+        state: absent
+      when:
+        - item["state"] | d("present") == "absent"
+      loop: "{{ systemd_unit__mounts__combined_var }}"
+      notify: "systemd_unit: systemctl daemon-reload"
 
-  - meta: 'flush_handlers' # we want a `systemctl daemon-reload` before managing unit states
-
-  - name: 'systemctl {{ item["enabled"] | d(true) | bool | ternary("enable", "disable") }} {{ item["name"] }}.service'
-    ansible.builtin.systemd:
-      name: '{{ item["name"] }}.service'
-      enabled: '{{ item["enabled"] | d(true) }}'
-    loop: '{{ systemd_unit__services__combined_var }}'
-
-  - name: 'systemctl {{ (item["state"] | d("started"))[:-2] }} {{ item["name"] }}.service'
-    ansible.builtin.systemd:
-      name: '{{ item["name"] }}.service'
-      state: '{{ item["state"] | d("started") }}'
-    when:
-      - 'item["state"] | d("started") not in ["present", "absent"]'
-    loop: '{{ systemd_unit__services__combined_var }}'
-
-  - name: 'systemctl {{ item["enabled"] | d(true) | bool | ternary("enable", "disable") }} {{ item["name"] }}.timer'
-    ansible.builtin.systemd:
-      name: '{{ item["name"] }}.timer'
-      enabled: '{{ item["enabled"] | d(true) }}'
-    loop: '{{ systemd_unit__timers__combined_var }}'
-
-  - name: 'systemctl {{ (item["state"] | d("started"))[:-2] }} {{ item["name"] }}.timer'
-    ansible.builtin.systemd:
-      name: '{{ item["name"] }}.timer'
-      state: '{{ item["state"] | d("started") }}'
-    when:
-      - 'item["state"] | d("started") not in ["present", "absent"]'
-    loop: '{{ systemd_unit__timers__combined_var }}'
-
-  - name: 'systemctl {{ item["enabled"] | d(true) | bool | ternary("enable", "disable") }} {{ item["name"] }}.mount'
-    ansible.builtin.systemd:
-      name: '{{ item["name"] }}.mount'
-      enabled: '{{ item["enabled"] | d(true) }}'
-    loop: '{{ systemd_unit__mounts__combined_var }}'
-
-  - name: 'systemctl {{ (item["state"] | d("started"))[:-2] }} {{ item["name"] }}.mount'
-    ansible.builtin.systemd:
-      name: '{{ item["name"] }}.mount'
-      state: '{{ item["state"] | d("started") }}'
-    when:
-      - 'item["state"] | d("started") not in ["present", "absent"]'
-    loop: '{{ systemd_unit__mounts__combined_var }}'
+    - name: Deploy the mount units to /etc/systemd/system
+      ansible.builtin.template:
+        src: etc/systemd/system/mount.j2
+        dest: /etc/systemd/system/{{ item["name"] }}.mount
+        owner: root
+        group: root
+        mode: "0o644"
+      when:
+        - item["state"] | d("present") != "absent"
+      loop: "{{ systemd_unit__mounts__combined_var }}"
+      notify: "systemd_unit: systemctl daemon-reload"
 
   tags:
-    - 'systemd_unit'
-    - 'systemd_unit:state'
+    - systemd_unit
+    - systemd_unit:mounts
+
+- block:
+    - meta: flush_handlers # we want a `systemctl daemon-reload` before managing unit states
+
+    - name: systemctl {{ item["enabled"] | d(true) | bool | ternary("enable", "disable") }} {{ item["name"] }}.service
+      ansible.builtin.systemd:
+        name: '{{ item["name"] }}.service'
+        enabled: '{{ item["enabled"] | d(true) }}'
+      loop: "{{ systemd_unit__services__combined_var }}"
+
+    - name: systemctl {{ (item["state"] | d("started"))[:-2] }} {{ item["name"] }}.service
+      ansible.builtin.systemd:
+        name: '{{ item["name"] }}.service'
+        state: '{{ item["state"] | d("started") }}'
+      when:
+        - item["state"] | d("started") not in ["present", "absent"]
+      loop: "{{ systemd_unit__services__combined_var }}"
+
+    - name: systemctl {{ item["enabled"] | d(true) | bool | ternary("enable", "disable") }} {{ item["name"] }}.timer
+      ansible.builtin.systemd:
+        name: '{{ item["name"] }}.timer'
+        enabled: '{{ item["enabled"] | d(true) }}'
+      loop: "{{ systemd_unit__timers__combined_var }}"
+
+    - name: systemctl {{ (item["state"] | d("started"))[:-2] }} {{ item["name"] }}.timer
+      ansible.builtin.systemd:
+        name: '{{ item["name"] }}.timer'
+        state: '{{ item["state"] | d("started") }}'
+      when:
+        - item["state"] | d("started") not in ["present", "absent"]
+      loop: "{{ systemd_unit__timers__combined_var }}"
+
+    - name: systemctl {{ item["enabled"] | d(true) | bool | ternary("enable", "disable") }} {{ item["name"] }}.mount
+      ansible.builtin.systemd:
+        name: '{{ item["name"] }}.mount'
+        enabled: '{{ item["enabled"] | d(true) }}'
+      loop: "{{ systemd_unit__mounts__combined_var }}"
+
+    - name: systemctl {{ (item["state"] | d("started"))[:-2] }} {{ item["name"] }}.mount
+      ansible.builtin.systemd:
+        name: '{{ item["name"] }}.mount'
+        state: '{{ item["state"] | d("started") }}'
+      when:
+        - item["state"] | d("started") not in ["present", "absent"]
+      loop: "{{ systemd_unit__mounts__combined_var }}"
+
+  tags:
+    - systemd_unit
+    - systemd_unit:state

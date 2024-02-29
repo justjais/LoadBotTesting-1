@@ -2,7 +2,6 @@
 - tags:
     - repo_graylog
   block:
-
     # https://go2docs.graylog.org/5-0/downloading_and_installing_graylog/debian_installation.htm
     - name: "Apt install gnupg # required for apt-key add"
       ansible.builtin.package:

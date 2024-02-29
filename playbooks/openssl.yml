@@ -1,7 +1,7 @@
-- name: 'Install openssl'
+---
+- name: Install openssl
   hosts:
-    - 'lfops_openssl'
+    - lfops_openssl
 
   roles:
-
-    - role: 'linuxfabrik.lfops.openssl'
+    - role: linuxfabrik.lfops.openssl

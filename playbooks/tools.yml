@@ -1,12 +1,12 @@
-- name: 'Ensures that some tools are installed'
+---
+- name: Ensures that some tools are installed
   hosts:
-    - 'lfops_tools'
+    - lfops_tools
 
   roles:
-
-    - role: 'linuxfabrik.lfops.repo_epel'
+    - role: linuxfabrik.lfops.repo_epel
       when:
-        - 'ansible_facts["os_family"] == "RedHat"'
-        - 'ansible_facts["distribution_major_version"] in ["7", "8"]'
+        - ansible_facts["os_family"] == "RedHat"
+        - ansible_facts["distribution_major_version"] in ["7", "8"]
 
-    - role: 'linuxfabrik.lfops.tools'
+    - role: linuxfabrik.lfops.tools

@@ -2,7 +2,6 @@
 - tags:
     - crypto_policy
   block:
-
     - name: Deploy /etc/crypto-policies/policies/modules/LINUXFABRIK-FUTURE.pmod
       ansible.builtin.template:
         src: etc/crypto-policies/policies/modules/LINUXFABRIK-FUTURE.pmod.j2

@@ -2,7 +2,6 @@
 - tags:
     - icingaweb2_module_monitoring
   block:
-
     - name: Mkdir -p /etc/icingaweb2/modules/monitoring
       ansible.builtin.file:
         path: /etc/icingaweb2/modules/monitoring

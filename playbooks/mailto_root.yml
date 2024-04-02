@@ -1,19 +1,19 @@
-- name: 'Configures mail to root'
+---
+- name: Configures mail to root
   hosts:
-    - 'lfops_mailto_root'
+    - lfops_mailto_root
 
   roles:
-
-    - role: 'linuxfabrik.lfops.repo_epel'
+    - role: linuxfabrik.lfops.repo_epel
       when:
-        - 'ansible_facts["os_family"] == "RedHat" and ansible_facts["distribution_major_version"] in ["7", "8"]'
+        - ansible_facts["os_family"] == "RedHat" and ansible_facts["distribution_major_version"] in ["7", "8"]
 
-    - role: 'linuxfabrik.lfops.postfix'
+    - role: linuxfabrik.lfops.postfix
       when:
-        - 'not mailto_root__skip_postfix | d(false)'
+        - not mailto_root__skip_postfix | d(false)
 
-    - role: 'linuxfabrik.lfops.mailx'
+    - role: linuxfabrik.lfops.mailx
       when:
-        - 'not mailto_root__skip_mailx | d(false)'
+        - not mailto_root__skip_mailx | d(false)
 
-    - role: 'linuxfabrik.lfops.mailto_root'
+    - role: linuxfabrik.lfops.mailto_root

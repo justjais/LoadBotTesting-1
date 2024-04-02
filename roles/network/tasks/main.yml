@@ -2,7 +2,6 @@
 - tags:
     - network
   block:
-
     - name: Disable route to the ZEROCONF network that is added to the routing table by the network initscripts
       ansible.builtin.lineinfile:
         path: /etc/sysconfig/network

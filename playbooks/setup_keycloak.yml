@@ -1,44 +1,42 @@
-- name: 'Install and configure Keycloak'
+---
+- name: Install and configure Keycloak
   hosts:
-    - 'lfops_setup_keycloak'
+    - lfops_setup_keycloak
 
   roles:
-
-    - role: 'linuxfabrik.lfops.repo_epel'
+    - role: linuxfabrik.lfops.repo_epel
       when:
-        - 'ansible_facts["os_family"] == "RedHat" and ansible_facts["distribution_major_version"] in ["7", "8"]'
+        - ansible_facts["os_family"] == "RedHat" and ansible_facts["distribution_major_version"] in ["7", "8"]
 
-    - role: 'linuxfabrik.lfops.repo_mydumper'
+    - role: linuxfabrik.lfops.repo_mydumper
       when:
-        - 'ansible_facts["os_family"] == "RedHat" and ansible_facts["distribution_major_version"] in ["7", "8"]' # currently doesn't work for fedora
-        - 'not keycloak__skip_repo_mydumper | d(false)'
+        - ansible_facts["os_family"] == "RedHat" and ansible_facts["distribution_major_version"] in ["7", "8"] # currently doesn't work for fedora
+        - not keycloak__skip_repo_mydumper | d(false)
 
-    - role: 'linuxfabrik.lfops.repo_mariadb'
+    - role: linuxfabrik.lfops.repo_mariadb
       when:
-        - 'not mariadb_server__skip_repo_mariadb | d(false)'
+        - not mariadb_server__skip_repo_mariadb | d(false)
 
-    - role: 'linuxfabrik.lfops.python'
-      python__modules__dependent_var: '{{ mariadb_server__python__modules__dependent_var | d([]) }}'
+    - role: linuxfabrik.lfops.python
+      python__modules__dependent_var: "{{ mariadb_server__python__modules__dependent_var | d([]) }}"
       when:
-        - 'not mariadb_server__skip_python | d(false)'
+        - not mariadb_server__skip_python | d(false)
 
-    - role: 'linuxfabrik.lfops.kernel_settings'
-      kernel_settings__sysctl__dependent_var: '{{
-          mariadb_server__kernel_settings__sysctl__dependent_var | d([]) +
-          keycloak__kernel_settings__sysctl__dependent_var | d([])
-        }}'
+    - role: linuxfabrik.lfops.kernel_settings
+      kernel_settings__sysctl__dependent_var: "{{ mariadb_server__kernel_settings__sysctl__dependent_var | d([]) + keycloak__kernel_settings__sysctl__dependent_var
+        | d([]) }}"
       when:
-        - 'not keycloak__skip_kernel_settings | d(false)'
+        - not keycloak__skip_kernel_settings | d(false)
 
-    - role: 'linuxfabrik.lfops.mariadb_server'
+    - role: linuxfabrik.lfops.mariadb_server
       mariadb_server__databases__dependent_var:
-        - '{{ keycloak__mariadb_server__databases__dependent_var }}'
+        - "{{ keycloak__mariadb_server__databases__dependent_var }}"
       mariadb_server__users__dependent_var:
-        - '{{ keycloak__mariadb_server__users__dependent_var }}'
+        - "{{ keycloak__mariadb_server__users__dependent_var }}"
 
-    - role: 'linuxfabrik.lfops.python'
+    - role: linuxfabrik.lfops.python
 
-    - role: 'linuxfabrik.lfops.apps'
-      apps__apps__dependent_var: '{{ keycloak__apps__apps__dependent_var | d([]) }}'
+    - role: linuxfabrik.lfops.apps
+      apps__apps__dependent_var: "{{ keycloak__apps__apps__dependent_var | d([]) }}"
 
-    - role: 'linuxfabrik.lfops.keycloak'
+    - role: linuxfabrik.lfops.keycloak

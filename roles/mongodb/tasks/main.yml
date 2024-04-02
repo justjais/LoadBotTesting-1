@@ -3,7 +3,6 @@
     - mongodb
 
   block:
-
     - name: Set platform/version specific variables
       ansible.builtin.import_role:
         name: shared
@@ -62,7 +61,6 @@
     - mongodb:state
 
   block:
-
     - name: Systemctl {{ mongodb__service_enabled | bool | ternary("enable", "disable") }} mongod.service
       ansible.builtin.systemd:
         name: mongod.service
@@ -81,7 +79,6 @@
     - mongodb
 
   block:
-
     - name: Ensure replicaset "{{ mongodb__conf_replication_repl_set_name__combined_var }}" exists
       community.mongodb.mongodb_replicaset:
         login_host: "{{ mongodb__conf_net_bind_ip }}"
@@ -116,7 +113,6 @@
     - mongodb:status
 
   block:
-
     - name: Check if host is primary and writable
       community.mongodb.mongodb_shell:
         login_host: "{{ mongodb__conf_net_bind_ip }}"
@@ -137,7 +133,6 @@
     - mongodb:user
 
   block:
-
     - name: Make sure we restarted mongodb if the config changed
       ansible.builtin.meta: flush_handlers
 
@@ -182,7 +177,6 @@
     - mongodb:user
 
   block:
-
     - name: Create MongoDB Dump user
       community.mongodb.mongodb_user:
         login_host: "{{ mongodb__conf_net_bind_ip }}"
@@ -207,7 +201,6 @@
     - mongodb:dump
 
   block:
-
     - name: Deploy /etc/mongodb-dump.conf
       ansible.builtin.template:
         src: etc/mongodb-dump.conf.j2

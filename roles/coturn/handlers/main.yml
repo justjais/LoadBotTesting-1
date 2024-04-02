@@ -1,4 +1,5 @@
-- name: 'coturn: restart coturn'
+---
+- name: "coturn: restart coturn"
   ansible.builtin.service:
-    name: 'coturn'
-    state: 'restarted'
+    name: coturn
+    state: restarted

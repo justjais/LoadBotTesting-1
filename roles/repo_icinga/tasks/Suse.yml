@@ -1,42 +1,42 @@
+---
 # https://icinga.com/docs/icinga-2/latest/doc/02-installation/08-SLES/
 - block:
+    - name: install module SUSE Linux Enterprise Software Development Kit 12 SP3 x86_64
+      command:
+        cmd: SUSEConnect -p sle-sdk/12.3/x86_64
+        creates: /etc/zypp/repos.d/*SLE-SDK12-SP3*
+      when:
+        - ansible_facts["distribution_major_version"] in ["12"]
+        - ansible_facts["distribution_release"] in ["3"]
 
-  - name: 'install module SUSE Linux Enterprise Software Development Kit 12 SP3 x86_64'
-    command:
-      cmd: 'SUSEConnect -p sle-sdk/12.3/x86_64'
-      creates: '/etc/zypp/repos.d/*SLE-SDK12-SP3*'
-    when:
-      - 'ansible_facts["distribution_major_version"] in ["12"]'
-      - 'ansible_facts["distribution_release"] in ["3"]'
+    - name: install module SUSE Package Hub (PackageHub/15.1/x86_64)
+      command:
+        cmd: SUSEConnect --product PackageHub/15.1/x86_64
+        creates: /etc/zypp/repos.d/*SUSE-PackageHub-15-SP1*
+      when:
+        - ansible_facts["distribution_major_version"] in ["15"]
+        - ansible_facts["distribution_release"] in ["1"]
 
-  - name: 'install module SUSE Package Hub (PackageHub/15.1/x86_64)'
-    command:
-      cmd: 'SUSEConnect --product PackageHub/15.1/x86_64'
-      creates: '/etc/zypp/repos.d/*SUSE-PackageHub-15-SP1*'
-    when:
-      - 'ansible_facts["distribution_major_version"] in ["15"]'
-      - 'ansible_facts["distribution_release"] in ["1"]'
+    - name: add RPM signing key for icinga repository
+      ansible.builtin.rpm_key:
+        state: present
+        key: https://packages.icinga.com/icinga.key
 
-  - name: 'add RPM signing key for icinga repository'
-    ansible.builtin.rpm_key:
-      state: 'present'
-      key: 'https://packages.icinga.com/icinga.key'
+    - name: "deploy the icinga-release repo (mirror: {{ repo_icinga__mirror_url }})"
+      ansible.builtin.template:
+        src: etc/zypp/repos.d/ICINGA-release.repo.j2
+        dest: /etc/zypp/repos.d/ICINGA-release.repo
+        owner: root
+        group: root
+        mode: "0o644"
 
-  - name: 'deploy the icinga-release repo (mirror: {{ repo_icinga__mirror_url }})'
-    ansible.builtin.template:
-      src: 'etc/zypp/repos.d/ICINGA-release.repo.j2'
-      dest: '/etc/zypp/repos.d/ICINGA-release.repo'
-      owner: 'root'
-      group: 'root'
-      mode: 0o644
-
-  - name: 'deploy the icinga-snapshot repo (mirror: {{ repo_icinga__mirror_url }})'
-    ansible.builtin.template:
-      src: 'etc/zypp/repos.d/ICINGA-snapshot.repo.j2'
-      dest: '/etc/zypp/repos.d/ICINGA-snapshot.repo'
-      owner: 'root'
-      group: 'root'
-      mode: 0o644
+    - name: "deploy the icinga-snapshot repo (mirror: {{ repo_icinga__mirror_url }})"
+      ansible.builtin.template:
+        src: etc/zypp/repos.d/ICINGA-snapshot.repo.j2
+        dest: /etc/zypp/repos.d/ICINGA-snapshot.repo
+        owner: root
+        group: root
+        mode: "0o644"
 
   tags:
-    - 'repo_icinga'
+    - repo_icinga

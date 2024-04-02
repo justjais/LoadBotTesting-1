@@ -1,7 +1,7 @@
-- name: 'Set the system-wide cryptographic policy'
+---
+- name: Set the system-wide cryptographic policy
   hosts:
-    - 'lfops_crypto_policy'
+    - lfops_crypto_policy
 
   roles:
-
-    - role: 'linuxfabrik.lfops.crypto_policy'
+    - role: linuxfabrik.lfops.crypto_policy

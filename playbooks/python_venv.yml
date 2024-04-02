@@ -1,11 +1,11 @@
-- name: 'Creates and manages python venvs'
+---
+- name: Creates and manages python venvs
   hosts:
-    - 'lfops_python_venv'
+    - lfops_python_venv
 
   roles:
-
-    - role: 'linuxfabrik.lfops.python'
+    - role: linuxfabrik.lfops.python
       when:
-        - 'not python_venv__skip_python | d(false)'
+        - not python_venv__skip_python | d(false)
 
-    - role: 'linuxfabrik.lfops.python_venv'
+    - role: linuxfabrik.lfops.python_venv

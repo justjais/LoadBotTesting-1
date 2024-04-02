@@ -3,7 +3,6 @@
     - repo_remi
 
   block:
-
     - name: Deploy /etc/pki/rpm-gpg/RPM-GPG-KEY-remi.el8
       ansible.builtin.copy:
         src: RedHat8/etc/pki/rpm-gpg/RPM-GPG-KEY-remi.el8
@@ -13,7 +12,6 @@
     - repo_remi
 
   block:
-
     - name: Dnf -y module reset php
       ansible.builtin.command: dnf -y module reset php
       register: repo_remi__dnf_module_reset_php_result
@@ -28,7 +26,6 @@
   tags:
     - repo_remi
   block:
-
     - name: Dnf -y module reset redis
       ansible.builtin.command: dnf -y module reset redis
       register: repo_remi__dnf_module_enable_redis_result

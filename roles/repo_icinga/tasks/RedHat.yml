@@ -6,7 +6,6 @@
     - repo_icinga
 
   block:
-
     - name: Install {{ repo_icinga__rpm_release_url }}
       ansible.builtin.package:
         name: "{{ repo_icinga__rpm_release_url }}"
@@ -19,7 +18,6 @@
   tags:
     - repo_icinga
   block:
-
     - name: "Deploy the icinga-release repo (mirror: {{ repo_icinga__mirror_url }})"
       ansible.builtin.template:
         src: etc/yum.repos.d/ICINGA-release.repo.j2

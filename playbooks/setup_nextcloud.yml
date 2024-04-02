@@ -1,138 +1,129 @@
-- name: 'The Linuxfabrik Nextcloud setup'
+---
+- name: The Linuxfabrik Nextcloud setup
   hosts:
-    - 'lfops_setup_nextcloud'
+    - lfops_setup_nextcloud
 
   roles:
-
-      # === Prepare the system
-    - role: 'linuxfabrik.lfops.yum_utils'
+    # === Prepare the system
+    - role: linuxfabrik.lfops.yum_utils
       when:
-        - 'ansible_facts["os_family"] == "RedHat"'
-        - 'not setup_nextcloud__skip_yum_utils | d(false)'
+        - ansible_facts["os_family"] == "RedHat"
+        - not setup_nextcloud__skip_yum_utils | d(false)
 
-    - role: 'linuxfabrik.lfops.repo_epel'
+    - role: linuxfabrik.lfops.repo_epel
       when:
-        - 'ansible_facts["os_family"] == "RedHat"'
-        - 'ansible_facts["distribution_major_version"] in ["7", "8"]'
-        - 'not setup_nextcloud__skip_repo_epel | default(false)'
+        - ansible_facts["os_family"] == "RedHat"
+        - ansible_facts["distribution_major_version"] in ["7", "8"]
+        - not setup_nextcloud__skip_repo_epel | default(false)
 
-    - role: 'linuxfabrik.lfops.policycoreutils'
+    - role: linuxfabrik.lfops.policycoreutils
       when:
-        - 'ansible_facts["os_family"] == "RedHat"'
-        - 'not setup_nextcloud__skip_policycoreutils | default(false)'
+        - ansible_facts["os_family"] == "RedHat"
+        - not setup_nextcloud__skip_policycoreutils | default(false)
 
-    - role: 'linuxfabrik.lfops.python'
+    - role: linuxfabrik.lfops.python
       python__modules__dependent_var:
-        - '{{ mariadb_server__python__modules__dependent_var | d([]) }}'
+        - "{{ mariadb_server__python__modules__dependent_var | d([]) }}"
       when:
-        - 'not setup_nextcloud__skip_python | d(false)'
+        - not setup_nextcloud__skip_python | d(false)
 
-#     - role: 'linuxfabrik.lfops.fail2ban'
-#       when:
-#         - 'not setup_nextcloud__skip_fail2ban | d(false)'
+    #     - role: 'linuxfabrik.lfops.fail2ban'
+    #       when:
+    #         - 'not setup_nextcloud__skip_fail2ban | d(false)'
 
-    - role: 'linuxfabrik.lfops.kernel_settings'
-      kernel_settings__sysctl__dependent_var: '{{
-          mariadb_server__kernel_settings__sysctl__dependent_var | d([]) +
-          redis__kernel_settings__sysctl__dependent_var | d([])
-        }}'
+    - role: linuxfabrik.lfops.kernel_settings
+      kernel_settings__sysctl__dependent_var: "{{ mariadb_server__kernel_settings__sysctl__dependent_var | d([]) + redis__kernel_settings__sysctl__dependent_var |
+        d([]) }}"
       kernel_settings__transparent_hugepages__dependent_var: "{{ redis__kernel_settings__transparent_hugepages__dependent_var | d('') }}"
       when:
-        - 'not setup_nextcloud__skip_kernel_settings | d(false)'
+        - not setup_nextcloud__skip_kernel_settings | d(false)
 
-
-      # ====Apache Webserver
-    - role: 'linuxfabrik.lfops.apache_httpd'
-      apache_httpd__mods__dependent_var: '{{ nextcloud__apache_httpd__mods__dependent_var | d([]) }}'
-      apache_httpd__vhosts__dependent_var: '{{ nextcloud__apache_httpd__vhosts__dependent_var | d([]) }}'
+    # ====Apache Webserver
+    - role: linuxfabrik.lfops.apache_httpd
+      apache_httpd__mods__dependent_var: "{{ nextcloud__apache_httpd__mods__dependent_var | d([]) }}"
+      apache_httpd__vhosts__dependent_var: "{{ nextcloud__apache_httpd__vhosts__dependent_var | d([]) }}"
       when:
-        - 'not setup_nextcloud__skip_apache_httpd | d(false)'
+        - not setup_nextcloud__skip_apache_httpd | d(false)
 
-
-      # === Redis, PHP and PHP-FPM from Remi Repo
-    - role: 'linuxfabrik.lfops.repo_remi'
+    # === Redis, PHP and PHP-FPM from Remi Repo
+    - role: linuxfabrik.lfops.repo_remi
       when:
-        - 'ansible_facts["os_family"] == "RedHat"'
-        - 'ansible_facts["distribution_major_version"] in ["7", "8"]'
-        - 'not setup_nextcloud__skip_repo_remi | d(false)'
+        - ansible_facts["os_family"] == "RedHat"
+        - ansible_facts["distribution_major_version"] in ["7", "8"]
+        - not setup_nextcloud__skip_repo_remi | d(false)
 
-    - role: 'linuxfabrik.lfops.php'
-      php__ini_max_execution_time__dependent_var: '{{ nextcloud__php__ini_max_execution_time__dependent_var }}'
-      php__ini_max_file_uploads__dependent_var: '{{ nextcloud__php__ini_max_file_uploads__dependent_var }}'
-      php__ini_memory_limit__dependent_var: '{{ nextcloud__php__ini_memory_limit__dependent_var }}'
-      php__ini_opcache_interned_strings_buffer__dependent_var: '{{ nextcloud__php__ini_opcache_interned_strings_buffer__dependent_var }}'
-      php__ini_post_max_size__dependent_var: '{{ nextcloud__php__ini_post_max_size__dependent_var }}'
-      php__ini_upload_max_filesize__dependent_var: '{{ nextcloud__php__ini_upload_max_filesize__dependent_var }}'
-      php__modules__dependent_var: '{{ nextcloud__php__modules__dependent_var }}'
+    - role: linuxfabrik.lfops.php
+      php__ini_max_execution_time__dependent_var: "{{ nextcloud__php__ini_max_execution_time__dependent_var }}"
+      php__ini_max_file_uploads__dependent_var: "{{ nextcloud__php__ini_max_file_uploads__dependent_var }}"
+      php__ini_memory_limit__dependent_var: "{{ nextcloud__php__ini_memory_limit__dependent_var }}"
+      php__ini_opcache_interned_strings_buffer__dependent_var: "{{ nextcloud__php__ini_opcache_interned_strings_buffer__dependent_var }}"
+      php__ini_post_max_size__dependent_var: "{{ nextcloud__php__ini_post_max_size__dependent_var }}"
+      php__ini_upload_max_filesize__dependent_var: "{{ nextcloud__php__ini_upload_max_filesize__dependent_var }}"
+      php__modules__dependent_var: "{{ nextcloud__php__modules__dependent_var }}"
       when:
-        - 'not setup_nextcloud__skip_php | d(false)'
+        - not setup_nextcloud__skip_php | d(false)
 
-
-      # === MariaDB
-    - role: 'linuxfabrik.lfops.repo_mydumper'
+    # === MariaDB
+    - role: linuxfabrik.lfops.repo_mydumper
       when:
-        - 'ansible_facts["os_family"] == "RedHat"'
-        - 'ansible_facts["distribution_major_version"] in ["7", "8"]'   # currently doesn't work for fedora
-        - 'not setup_nextcloud__skip_repo_mydumper | d(false)'
+        - ansible_facts["os_family"] == "RedHat"
+        - ansible_facts["distribution_major_version"] in ["7", "8"] # currently doesn't work for fedora
+        - not setup_nextcloud__skip_repo_mydumper | d(false)
 
-    - role: 'linuxfabrik.lfops.repo_mariadb'
+    - role: linuxfabrik.lfops.repo_mariadb
       # Attention: Using a fixed LTS version for Nextcloud.
       when:
-        - 'ansible_facts["os_family"] == "RedHat"'
-        - 'ansible_facts["distribution_major_version"] in ["7", "8"]'
-        - 'not setup_nextcloud__skip_repo_mariadb | d(false)'
+        - ansible_facts["os_family"] == "RedHat"
+        - ansible_facts["distribution_major_version"] in ["7", "8"]
+        - not setup_nextcloud__skip_repo_mariadb | d(false)
 
-    - role: 'linuxfabrik.lfops.mariadb_server'
+    - role: linuxfabrik.lfops.mariadb_server
       when:
-        - 'not setup_nextcloud__skip_mariadb_server | d(false)'
+        - not setup_nextcloud__skip_mariadb_server | d(false)
 
-
-      # === Redis
-    - role: 'linuxfabrik.lfops.redis'
+    # === Redis
+    - role: linuxfabrik.lfops.redis
       when:
-        - 'not setup_nextcloud__skip_redis | d(false)'
+        - not setup_nextcloud__skip_redis | d(false)
 
-
-      # === Nextcloud Application
-    - role: 'linuxfabrik.lfops.selinux'
+    # === Nextcloud Application
+    - role: linuxfabrik.lfops.selinux
       selinux__booleans__dependent_var:
-        - '{{ nextcloud__selinux__booleans__dependent_var }}'
+        - "{{ nextcloud__selinux__booleans__dependent_var }}"
       selinux__fcontexts__dependent_var:
-        - '{{ nextcloud__selinux__fcontexts__dependent_var }}'
+        - "{{ nextcloud__selinux__fcontexts__dependent_var }}"
       when:
-        - 'ansible_facts["os_family"] == "RedHat"'
-        - 'not setup_nextcloud__skip_selinux | default(false)'
+        - ansible_facts["os_family"] == "RedHat"
+        - not setup_nextcloud__skip_selinux | default(false)
 
-    - role: 'linuxfabrik.lfops.nextcloud'
+    - role: linuxfabrik.lfops.nextcloud
 
-
-      # === Online Office
-    - role: 'linuxfabrik.lfops.repo_collabora_code'
+    # === Online Office
+    - role: linuxfabrik.lfops.repo_collabora_code
       when:
-        - 'not setup_nextcloud__skip_repo_collabora_code | d(false)'
+        - not setup_nextcloud__skip_repo_collabora_code | d(false)
 
-    - role: 'linuxfabrik.lfops.repo_collabora'
+    - role: linuxfabrik.lfops.repo_collabora
       when:
-        - 'not setup_nextcloud__skip_repo_collabora | default(true)'
+        - not setup_nextcloud__skip_repo_collabora | default(true)
 
-    - role: 'linuxfabrik.lfops.collabora'
-      collabora__coolwsd_storage_wopi__dependent_var: '{{ nextcloud__collabora__coolwsd_storage_wopi__dependent_var | d([]) }}'
+    - role: linuxfabrik.lfops.collabora
+      collabora__coolwsd_storage_wopi__dependent_var: "{{ nextcloud__collabora__coolwsd_storage_wopi__dependent_var | d([]) }}"
       when:
-        - 'not setup_nextcloud__skip_collabora | d(false)'
+        - not setup_nextcloud__skip_collabora | d(false)
 
-
-      # === Nextcloud Talk
-    - role: 'linuxfabrik.lfops.coturn'
+    # === Nextcloud Talk
+    - role: linuxfabrik.lfops.coturn
       when:
-        - 'not setup_nextcloud__skip_coturn | d(false)'
+        - not setup_nextcloud__skip_coturn | d(false)
 
-      # === Objectstore Backup
-    - role: 'linuxfabrik.lfops.minio_client'
+    # === Objectstore Backup
+    - role: linuxfabrik.lfops.minio_client
       minio_client__aliases__dependent_var:
-        - '{{ objectstore_backup__minio_client__aliases__dependent_var }}'
+        - "{{ objectstore_backup__minio_client__aliases__dependent_var }}"
       when:
-        - 'not setup_nextcloud__skip_minio_client | d(false)'
+        - not setup_nextcloud__skip_minio_client | d(false)
 
-    - role: 'linuxfabrik.lfops.objectstore_backup'
+    - role: linuxfabrik.lfops.objectstore_backup
       when:
-        - 'not setup_nextcloud__skip_objectstore_backup | d(false)'
+        - not setup_nextcloud__skip_objectstore_backup | d(false)

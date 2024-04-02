@@ -10,7 +10,6 @@
     - at
     - at:state
   block:
-
     - name: Systemctl {{ at__service_enabled | bool | ternary("enable", "disable") }} --now atd
       ansible.builtin.service:
         name: atd

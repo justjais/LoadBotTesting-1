@@ -2,7 +2,6 @@
 - tags:
     - repo_rpmfusion
   block:
-
     - name: "Deploy the repo files (mirror: {{ repo_rpmfusion__mirror_url }})"
       ansible.builtin.template:
         src: "{{ item }}.j2"

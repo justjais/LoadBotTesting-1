@@ -3,7 +3,6 @@
     - clamav
 
   block:
-
     - name: Install clamav clamav-update clamd
       ansible.builtin.package:
         name:
@@ -65,7 +64,6 @@
     - clamav:configure
 
   block:
-
     - name: Deploy /etc/clamd.d/scan.conf
       ansible.builtin.template:
         src: etc/clamd.d/scan.conf.j2
@@ -116,7 +114,6 @@
     - clamav
     - clamav:state
   block:
-
     - name: Systemctl {{ clamav__clamd_service_enabled | bool | ternary("enable", "disable") }} --now clamd@scan.service
       ansible.builtin.service:
         name: clamd@scan

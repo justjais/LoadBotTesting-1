@@ -1,7 +1,7 @@
-- name: 'Configure login banners ("motd", but in the right way)'
+---
+- name: Configure login banners ("motd", but in the right way)
   hosts:
-    - 'lfops_motd'
+    - lfops_motd
 
   roles:
-
-    - role: 'linuxfabrik.lfops.motd'
+    - role: linuxfabrik.lfops.motd

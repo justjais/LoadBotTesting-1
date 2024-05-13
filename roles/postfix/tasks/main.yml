@@ -20,7 +20,6 @@
     - postfix
 
   block:
-
     - name: Remove all lines containing "relayhost"
       ansible.builtin.lineinfile:
         dest: /etc/postfix/main.cf
@@ -89,7 +88,6 @@
     - postfix
     - postfix:state
   block:
-
     - name: "Systemctl: postfix enabled = {{ postfix__service_enabled }}"
       ansible.builtin.systemd:
         name: postfix.service

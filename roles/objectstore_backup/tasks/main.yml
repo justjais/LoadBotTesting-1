@@ -2,7 +2,6 @@
 - tags:
     - objectstore_backup
   block:
-
     - name: '/usr/local/bin/mc --config-dir /etc/mc mb "{{ objectstore_backup__destination_name }}"/{{ objectstore_backup__destination_bucket }} # create destination
         bucket'
       ansible.builtin.command: /usr/local/bin/mc --config-dir /etc/mc mb "{{ objectstore_backup__destination_name }}"/{{ objectstore_backup__destination_bucket }}

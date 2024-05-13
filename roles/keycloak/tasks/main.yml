@@ -57,7 +57,6 @@
     - keycloak:configure
 
   block:
-
     - name: Create keycloak config file
       ansible.builtin.template:
         src: opt/keycloak/conf/keycloak.conf.j2
@@ -126,7 +125,6 @@
     - keycloak:configure
     - keycloak:state
   block:
-
     - name: Systemctl {{ keycloak__enabled | bool | ternary("enable", "disable") }} keycloak.service
       ansible.builtin.service:
         name: keycloak.service

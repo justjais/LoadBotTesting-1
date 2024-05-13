@@ -1,1 +1,2 @@
-policycoreutils__package: 'policycoreutils-python'
+---
+policycoreutils__package: policycoreutils-python

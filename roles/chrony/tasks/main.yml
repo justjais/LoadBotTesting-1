@@ -3,7 +3,6 @@
     - chrony
 
   block:
-
     - name: Install chrony
       ansible.builtin.package:
         name: chrony
@@ -20,7 +19,6 @@
     - chrony
     - chrony:state
   block:
-
     - name: Systemctl {{ chrony__service_enabled | bool | ternary("enable", "disable") }} --now chronyd.service
       ansible.builtin.systemd:
         name: chronyd.service

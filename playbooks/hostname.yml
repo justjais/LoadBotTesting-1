@@ -1,7 +1,7 @@
-- name: 'Set the hostname of the server '
+---
+- name: "Set the hostname of the server "
   hosts:
-    - 'lfops_hostname'
+    - lfops_hostname
 
   roles:
-
-    - role: 'linuxfabrik.lfops.hostname'
+    - role: linuxfabrik.lfops.hostname

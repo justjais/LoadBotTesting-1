@@ -2,7 +2,6 @@
 - tags:
     - repo_sury
   block:
-
     - name: 'Deploy the repo file (mirror: {{ repo_sury__mirror_url | default("") }})'
       ansible.builtin.template:
         src: etc/apt/sources.list.d/sury.list.j2

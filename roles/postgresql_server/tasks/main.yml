@@ -3,7 +3,6 @@
     - postgresql_server
 
   block:
-
     - name: Install postgresql{{ postgresql_server__version }}-server
       ansible.builtin.package:
         name:
@@ -17,7 +16,6 @@
     - postgresql_server:state
 
   block:
-
     - name: Set internal vars for role
       ansible.builtin.set_fact:
         postgresql_server__installed_version: "{{ postgresql_server__version }}"
@@ -32,7 +30,6 @@
     - postgresql_server:state
 
   block:
-
     - name: Get the list of installed packages
       ansible.builtin.package_facts: # yamllint disable-line rule:empty-values
       check_mode: false # run task even if `--check` is specified
@@ -52,7 +49,6 @@
     - postgresql_server
 
   block:
-
     - name: "{{ postgresql_server__initdb_cmd }}"
       ansible.builtin.command:
         cmd: "{{ postgresql_server__initdb_cmd }}"
@@ -96,7 +92,6 @@
     - postgresql_server:state
 
   block:
-
     - name: Systemctl {{ postgresql_server__enabled | bool | ternary("enable", "disable") }} {{ postgresql_server__service_name }}
       ansible.builtin.service:
         name: "{{ postgresql_server__service_name }}"
@@ -112,7 +107,6 @@
     - postgresql_server:users
 
   block:
-
     - name: Create, update or delete PostgreSQL users
       community.postgresql.postgresql_user:
         port: "{{ postgresql_server__conf_port }}"
@@ -131,7 +125,6 @@
     - postgresql_server:databases
 
   block:
-
     - name: Create or delete PostgreSQL databases
       community.postgresql.postgresql_db:
         port: "{{ postgresql_server__conf_port }}"
@@ -151,7 +144,6 @@
     - postgresql_server:privs
 
   block:
-
     - name: Grant or revoke privileges
       community.postgresql.postgresql_privs:
         login_db: postgres
@@ -170,7 +162,6 @@
     - postgresql_server
     - postgresql_server:dump
   block:
-
     - name: Deploy /usr/local/sbin/postgresql-dump
       ansible.builtin.template:
         src: usr/local/sbin/postgresql-dump.j2

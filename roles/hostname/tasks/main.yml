@@ -1,8 +1,8 @@
+---
 - block:
-
-  - name: 'hostnamectl set-hostname {{ hostname__full_hostname }}'
-    ansible.builtin.hostname:
-      name: '{{ hostname__full_hostname }}'
+    - name: hostnamectl set-hostname {{ hostname__full_hostname }}
+      ansible.builtin.hostname:
+        name: "{{ hostname__full_hostname }}"
 
   tags:
-    - 'hostname'
+    - hostname

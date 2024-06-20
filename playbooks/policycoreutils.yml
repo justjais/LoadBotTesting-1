@@ -1,7 +1,7 @@
-- name: 'Install policycoreutils'
+---
+- name: Install policycoreutils
   hosts:
-    - 'lfops_policycoreutils'
+    - lfops_policycoreutils
 
   roles:
-
-    - role: 'linuxfabrik.lfops.policycoreutils'
+    - role: linuxfabrik.lfops.policycoreutils

@@ -1,5 +1,6 @@
-- name: 'rocketchat: restart rocketchat'
+---
+- name: "rocketchat: restart rocketchat"
   ansible.builtin.service:
-    name: 'rocketchat'
-    state: 'restarted'
-  when: 'rocketchat__service_state_result is not changed'
+    name: rocketchat
+    state: restarted
+  when: rocketchat__service_state_result is not changed

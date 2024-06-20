@@ -1,8 +1,9 @@
-- name: 'Install compat-openssl10'
+---
+- name: Install compat-openssl10
   ansible.builtin.package:
     name:
-      - 'compat-openssl10'
-    state: 'present'
+      - compat-openssl10
+    state: present
   tags:
-    - 'mariadb_server'
-    - 'mariadb_server:dump'
+    - mariadb_server
+    - mariadb_server:dump

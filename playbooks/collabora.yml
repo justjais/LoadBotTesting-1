@@ -1,15 +1,15 @@
-- name: 'Installs and manages Collabora'
+---
+- name: Installs and manages Collabora
   hosts:
-    - 'lfops_collabora'
+    - lfops_collabora
 
   roles:
-
-    - role: 'linuxfabrik.lfops.repo_collabora_code'
+    - role: linuxfabrik.lfops.repo_collabora_code
       when:
-        - 'not collabora__skip_repo_collabora_code | default(false)'
+        - not collabora__skip_repo_collabora_code | default(false)
 
-    - role: 'linuxfabrik.lfops.repo_collabora'
+    - role: linuxfabrik.lfops.repo_collabora
       when:
-        - 'not collabora__skip_repo_collabora | default(true)'
+        - not collabora__skip_repo_collabora | default(true)
 
-    - role: 'linuxfabrik.lfops.collabora'
+    - role: linuxfabrik.lfops.collabora

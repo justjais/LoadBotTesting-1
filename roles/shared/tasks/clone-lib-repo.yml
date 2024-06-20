@@ -1,7 +1,6 @@
 ---
 # if the shared__lib_repo_version is not set to latest, we just use that value.
 # if not, we fetch the latest version from the github api.
-
 - name: Store the github release version
   ansible.builtin.set_fact:
     shared__lib_github_version: "{{ shared__lib_repo_version }}"
@@ -10,7 +9,6 @@
 - when: shared__lib_repo_version == "latest"
 
   block:
-
     - name: Get latest release version
       ansible.builtin.uri:
         url: https://api.github.com/repos/linuxfabrik/lib/releases/latest
@@ -22,9 +20,7 @@
       ansible.builtin.set_fact:
         shared__lib_github_version: '{{ shared__lib_github_release["json"]["tag_name"] }}'
 
-# block
 - block:
-
     - name: "Clone the lib git repo to localhost (version: {{ shared__lib_github_version }})"
       ansible.builtin.git:
         repo: https://github.com/Linuxfabrik/lib.git

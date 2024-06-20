@@ -2,7 +2,6 @@
 - tags:
     - repo_grafana
   block:
-
     - name: Curl https://packages.grafana.com/gpg.key -o /tmp/ansible.grafana.key
       ansible.builtin.get_url:
         url: https://packages.grafana.com/gpg.key
@@ -17,7 +16,6 @@
         src: /tmp/ansible.grafana.key
         dest: /etc/pki/rpm-gpg/grafana.key
 
-    # https://grafana.com/docs/grafana/latest/setup-grafana/installation/redhat-rhel-fedora/
     - name: "Deploy the Grafana repo (mirror: {{ repo_grafana__mirror_url }})"
       ansible.builtin.template:
         src: etc/yum.repos.d/grafana.repo.j2

@@ -8,7 +8,6 @@
 # * distribution (e.g. Fedora) is more specific than os_family
 # * distribution+distribution_major_version (e.g. RedHat8) is more specific than distribution
 # * distribution+distribution_version (e.g. RedHat8.3) is the most specific
-
 - name: Set platform/version specific variables
   ansible.builtin.include_vars: "{{ __vars_file }}"
   loop:

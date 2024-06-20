@@ -3,7 +3,6 @@
     - opensearch
 
   block:
-
     - name: Install opensearch{{ (opensearch__version__combined_var | length) | ternary("-" ~ opensearch__version__combined_var, "") }}
       ansible.builtin.package:
         name:
@@ -48,7 +47,6 @@
     - opensearch
     - opensearch:state
   block:
-
     - name: Systemctl {{ opensearch__service_enabled | bool | ternary("enable", "disable") }} --now opensearch.service
       ansible.builtin.service:
         name: opensearch.service

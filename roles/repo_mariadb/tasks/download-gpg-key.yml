@@ -2,7 +2,6 @@
 - tags:
     - repo_mariadb
   block:
-
     - name: Curl {{ gpg_key.url }} --output /tmp/ansible.{{ gpg_key.dest | basename }}
       ansible.builtin.get_url:
         url: "{{ gpg_key.url }}"

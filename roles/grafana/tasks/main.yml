@@ -3,7 +3,6 @@
     - grafana
 
   block:
-
     - name: Install grafana
       ansible.builtin.package:
         name:
@@ -15,7 +14,6 @@
     - grafana:configure
 
   block:
-
     - name: Deploy /etc/grafana/grafana.ini
       ansible.builtin.template:
         src: etc/grafana/grafana.ini.j2
@@ -40,7 +38,6 @@
     - grafana:provisioning
 
   block:
-
     - name: Mkdir -p /etc/grafana/provisioning/datasources/
       ansible.builtin.file:
         path: /etc/grafana/provisioning/datasources/
@@ -80,7 +77,6 @@
     - grafana:state
 
   block:
-
     - name: Systemctl {{ grafana__service_enabled | bool | ternary("enable", "disable") }} --now grafana-server.service
       ansible.builtin.systemd:
         name: grafana-server.service
@@ -91,7 +87,6 @@
     - grafana
 
   block:
-
     - name: Set the password for admin
       ansible.builtin.command: grafana-cli admin reset-admin-password {{ grafana__admin_login["password"] }}
 
@@ -99,8 +94,8 @@
     - grafana
     - grafana:service_accounts
   block:
-
     # https://grafana.com/docs/grafana/latest/developers/http_api/serviceaccount/
+
     - name: Get list of service accounts
       ansible.builtin.uri:
         url: "{{ grafana__api_url }}/api/serviceaccounts/search"
@@ -124,12 +119,11 @@
             "name": "{{ item['name'] }}",
             "role": "{{ item['role'] | d('Viewer') }}"
           }
-        status_code: 201
+        status_code: "{{ grafana__provisioning_service_accounts__combined_var }}"
         body_format: json
         headers:
           Accept: application/json
       register: grafana__service_accounts_create_result
-      loop: "{{ grafana__provisioning_service_accounts__combined_var }}"
       when: item["name"] not in grafana__service_accounts_list_result["json"]["serviceAccounts"] | map(attribute="name")
       changed_when: true # the task is either skipped when the account already exists, or a new account is created
 

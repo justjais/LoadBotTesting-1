@@ -2,7 +2,6 @@
 - tags:
     - repo_mydumper
   block:
-
     - name: Deploy the mydumper repo
       ansible.builtin.template:
         src: etc/yum.repos.d/mydumper.repo.j2

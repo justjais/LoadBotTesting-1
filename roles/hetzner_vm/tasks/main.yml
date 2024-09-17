@@ -1,95 +1,95 @@
+---
 - block:
+    - name: Manage the networks for the VM
+      hetzner.hcloud.hcloud_network:
+        api_token: "{{ hetzner_vm__api_token }}"
+        name: '{{ item["name"] }}'
+        ip_range: '{{ item["cidr"] }}'
+        state: present # we only use state present, as other vms could use the network too
+      loop: "{{ hetzner_vm__networks }}"
+      delegate_to: localhost
+      when:
+        - hetzner_vm__state != "absent"
+        - item["cidr"] is defined
 
-  - name: 'Manage the networks for the VM'
-    hetzner.hcloud.hcloud_network:
-      api_token: '{{ hetzner_vm__api_token }}'
-      name: '{{ item["name"] }}'
-      ip_range: '{{ item["cidr"] }}'
-      state: 'present' # we only use state present, as other vms could use the network too
-    loop: '{{ hetzner_vm__networks }}'
-    delegate_to: 'localhost'
-    when:
-      - 'hetzner_vm__state != "absent"'
-      - 'item["cidr"] is defined'
+    - name: Manage the subnet for the VM
+      hetzner.hcloud.hcloud_subnetwork:
+        api_token: "{{ hetzner_vm__api_token }}"
+        network: '{{ item["name"] }}'
+        ip_range: '{{ item["cidr"] }}'
+        network_zone: eu-central
+        type: cloud
+        state: present # we only use state present, as other vms could use the network too
+      loop: "{{ hetzner_vm__networks }}"
+      delegate_to: localhost
+      when:
+        - hetzner_vm__state != "absent"
+        - item["cidr"] is defined
 
-  - name: 'Manage the subnet for the VM'
-    hetzner.hcloud.hcloud_subnetwork:
-      api_token: '{{ hetzner_vm__api_token }}'
-      network: '{{ item["name"] }}'
-      ip_range: '{{ item["cidr"] }}'
-      network_zone: 'eu-central'
-      type: 'cloud'
-      state: 'present' # we only use state present, as other vms could use the network too
-    loop: '{{ hetzner_vm__networks }}'
-    delegate_to: 'localhost'
-    when:
-      - 'hetzner_vm__state != "absent"'
-      - 'item["cidr"] is defined'
+    - name: Manage the routes for the network
+      hetzner.hcloud.hcloud_route:
+        api_token: "{{ hetzner_vm__api_token }}"
+        network: '{{ item[0]["name"] }}'
+        destination: '{{ item[1]["destination"] }}'
+        gateway: '{{ item[1]["gateway"] }}'
+        state: present # we only use state present, as other vms could use the network too
+      loop: '{{ hetzner_vm__networks | subelements("routes", skip_missing=True) }}'
+      delegate_to: localhost
+      when:
+        - hetzner_vm__state != "absent"
+        - item["routes"] is defined
 
-  - name: 'Manage the routes for the network'
-    hetzner.hcloud.hcloud_route:
-      api_token: '{{ hetzner_vm__api_token }}'
-      network: '{{ item[0]["name"] }}'
-      destination: '{{ item[1]["destination"] }}'
-      gateway: '{{ item[1]["gateway"] }}'
-      state: 'present' # we only use state present, as other vms could use the network too
-    loop: '{{ hetzner_vm__networks | subelements("routes", skip_missing=True) }}'
-    delegate_to: 'localhost'
-    when:
-      - 'hetzner_vm__state != "absent"'
-      - 'item["routes"] is defined'
+    - name: Manage the firewall for the VM
+      hetzner.hcloud.hcloud_firewall:
+        api_token: "{{ hetzner_vm__api_token }}"
+        name: "{{ hetzner_vm__name }}" # name of the firewall. we use the name of the vm for this
+        rules: "{{ hetzner_vm__firewall_rules }}"
+        state: '{{ (hetzner_vm__state == "absent") | ternary("absent", "present") }}'
+      delegate_to: localhost
+      when:
+        - hetzner_vm__firewall_rules is defined and hetzner_vm__firewall_rules | length
 
-  - name: 'Manage the firewall for the VM'
-    hetzner.hcloud.hcloud_firewall:
-      api_token: '{{ hetzner_vm__api_token }}'
-      name: '{{ hetzner_vm__name }}' # name of the firewall. we use the name of the vm for this
-      rules: '{{ hetzner_vm__firewall_rules }}'
-      state: '{{ (hetzner_vm__state == "absent") | ternary("absent", "present") }}'
-    delegate_to: 'localhost'
-    when:
-      - 'hetzner_vm__firewall_rules is defined and hetzner_vm__firewall_rules | length'
+    - name: Manage the VMs at Hetzner
+      hetzner.hcloud.hcloud_server:
+        api_token: "{{ hetzner_vm__api_token }}"
+        backups: "{{ hetzner_vm__backups }}"
+        image: "{{ hetzner_vm__image }}"
+        location: "{{ hetzner_vm__location }}"
+        name: "{{ hetzner_vm__name }}"
+        server_type: "{{ hetzner_vm__server_type }}"
+        ssh_keys: "{{ hetzner_vm__ssh_keys }}"
+        force: "{{ hetzner_vm__force }}"
+        upgrade_disk: "{{ hetzner_vm__upgrade_disk }}"
+        enable_ipv4: "{{ hetzner_vm__enable_public_ipv4 }}"
+        enable_ipv6: "{{ hetzner_vm__enable_public_ipv6 }}"
+        firewalls: "{{ (hetzner_vm__firewall_rules is defined and hetzner_vm__firewall_rules | length) | ternary([hetzner_vm__name], []) }}"
+        state: "{{ hetzner_vm__state }}"
+      delegate_to: localhost
 
-  - name: 'Manage the VMs at Hetzner'
-    hetzner.hcloud.hcloud_server:
-      api_token: '{{ hetzner_vm__api_token }}'
-      backups: '{{ hetzner_vm__backups }}'
-      image: '{{ hetzner_vm__image }}'
-      location: '{{ hetzner_vm__location }}'
-      name: '{{ hetzner_vm__name }}'
-      server_type: '{{ hetzner_vm__server_type }}'
-      ssh_keys: '{{ hetzner_vm__ssh_keys }}'
-      force: '{{ hetzner_vm__force }}'
-      upgrade_disk: '{{ hetzner_vm__upgrade_disk }}'
-      enable_ipv4: '{{ hetzner_vm__enable_public_ipv4 }}'
-      enable_ipv6: '{{ hetzner_vm__enable_public_ipv6 }}'
-      firewalls: '{{ (hetzner_vm__firewall_rules is defined and hetzner_vm__firewall_rules | length) | ternary([hetzner_vm__name], []) }}'
-      state: '{{ hetzner_vm__state }}'
-    delegate_to: 'localhost'
+    - name: Attach the networks to the VM
+      hetzner.hcloud.hcloud_server_network:
+        api_token: "{{ hetzner_vm__api_token }}"
+        server: "{{ hetzner_vm__name }}"
+        network: '{{ item["name"] }}'
+        ip: '{{ item["fixed_ip"] }}'
+        state: '{{ item["state"] | default("present") }}'
+      loop: "{{ hetzner_vm__networks }}"
+      delegate_to: localhost
+      when:
+        - hetzner_vm__state != "absent"
+        - item["fixed_ip"] is defined
 
-  - name: 'Attach the networks to the VM'
-    hetzner.hcloud.hcloud_server_network:
-      api_token: '{{ hetzner_vm__api_token }}'
-      server: '{{ hetzner_vm__name }}'
-      network: '{{ item["name"] }}'
-      ip: '{{ item["fixed_ip"] }}'
-      state: '{{ item["state"] | default("present") }}'
-    loop: '{{ hetzner_vm__networks }}'
-    delegate_to: 'localhost'
-    when:
-      - 'hetzner_vm__state != "absent"'
-      - 'item["fixed_ip"] is defined'
-
-  - name: 'Manage the Volumes at Hetzner'
-    hetzner.hcloud.hcloud_volume:
-      api_token: '{{ hetzner_vm__api_token }}'
-      automount: false
-      name: '{{ item["name"] }}'
-      size: '{{ item["size"] }}'
-      format: '{{ item["format"] | default("xfs") }}'
-      server: '{{ hetzner_vm__name }}'
-      state: '{{ item["state"] | default("present") }}'
-    loop: '{{ hetzner_vm__volumes }}'
-    delegate_to: 'localhost'
+    - name: Manage the Volumes at Hetzner
+      hetzner.hcloud.hcloud_volume:
+        api_token: "{{ hetzner_vm__api_token }}"
+        automount: false
+        name: '{{ item["name"] }}'
+        size: '{{ item["size"] }}'
+        format: '{{ item["format"] | default("xfs") }}'
+        server: "{{ hetzner_vm__name }}"
+        state: '{{ item["state"] | default("present") }}'
+      loop: "{{ hetzner_vm__volumes }}"
+      delegate_to: localhost
 
   tags:
-    - 'hetzner_vm'
+    - hetzner_vm

@@ -1,23 +1,23 @@
-- name: 'Setup automatic update'
+---
+- name: Setup automatic update
   hosts:
-    - 'lfops_system_update'
+    - lfops_system_update
 
   roles:
-
-    - role: 'linuxfabrik.lfops.yum_utils'
+    - role: linuxfabrik.lfops.yum_utils
       when:
-        - 'ansible_facts["os_family"] == "RedHat"'
-        - 'not system_update__skip_yum_utils | d(false)'
+        - ansible_facts["os_family"] == "RedHat"
+        - not system_update__skip_yum_utils | d(false)
 
-    - role: 'linuxfabrik.lfops.at'
-    - role: 'linuxfabrik.lfops.mailx'
+    - role: linuxfabrik.lfops.at
+    - role: linuxfabrik.lfops.mailx
 
-    - role: 'linuxfabrik.lfops.postfix'
+    - role: linuxfabrik.lfops.postfix
       when:
-        - 'not system_update__skip_postfix | d(false)'
+        - not system_update__skip_postfix | d(false)
 
-    - role: 'linuxfabrik.lfops.mailto_root'
+    - role: linuxfabrik.lfops.mailto_root
       when:
-        - 'not system_update__skip_mailto_root | d(false)'
+        - not system_update__skip_mailto_root | d(false)
 
-    - role: 'linuxfabrik.lfops.system_update'
+    - role: linuxfabrik.lfops.system_update

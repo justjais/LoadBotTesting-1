@@ -19,7 +19,6 @@
 - tags:
     - icingaweb2_module_vspheredb
   block:
-
     - name: Add the user icingavspheredb with primary group of icingaweb2
       ansible.builtin.user:
         name: icingavspheredb

@@ -1,7 +1,8 @@
-- name: 'Install perl'
+---
+- name: Install perl
   ansible.builtin.package:
-    name: 'perl'
-    state: 'present'
+    name: perl
+    state: present
 
   tags:
-    - 'perl'
+    - perl

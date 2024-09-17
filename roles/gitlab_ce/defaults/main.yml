@@ -1,23 +1,24 @@
+---
 gitlab_ce__kernel_settings__sysctl__dependent_var:
-  - name: 'vm.swappiness'
+  - name: vm.swappiness
     value: 10
-gitlab_ce__on_calendar: '*-*-* 23:{{ 59 | random(seed=inventory_hostname) }}'
+gitlab_ce__on_calendar: "*-*-* 23:{{ 59 | random(seed=inventory_hostname) }}"
 gitlab_ce__rb_gitlab_rails_backup_keep_time: 86400
-gitlab_ce__rb_gitlab_rails_backup_path: '/backup/gitlab'
-gitlab_ce__rb_gitlab_rails_gitlab_email_display_name: 'GitLab@{{ inventory_hostname }}'
+gitlab_ce__rb_gitlab_rails_backup_path: /backup/gitlab
+gitlab_ce__rb_gitlab_rails_gitlab_email_display_name: GitLab@{{ inventory_hostname }}
 gitlab_ce__rb_gitlab_rails_gitlab_email_from: '{{ mailto_root__from | d("") }}'
 gitlab_ce__rb_gitlab_rails_rack_attack_git_basic_auth_bantime: 3600
 gitlab_ce__rb_gitlab_rails_rack_attack_git_basic_auth_enabled: true
 gitlab_ce__rb_gitlab_rails_rack_attack_git_basic_auth_findtime: 60
 gitlab_ce__rb_gitlab_rails_rack_attack_git_basic_auth_ip_whitelist:
-  - '127.0.0.1'
+  - 127.0.0.1
 gitlab_ce__rb_gitlab_rails_rack_attack_git_basic_auth_maxretry: 10
-gitlab_ce__rb_gitlab_rails_time_zone: 'Europe/Zurich'
+gitlab_ce__rb_gitlab_rails_time_zone: Europe/Zurich
 gitlab_ce__rb_letsencrypt_enable: false
 gitlab_ce__rb_nginx_listen_https: false
 gitlab_ce__rb_nginx_listen_port: 80
 gitlab_ce__rb_registry_nginx_listen_https: false
 gitlab_ce__rb_registry_nginx_listen_port: 5050
 gitlab_ce__rb_registry_nginx_proxy_set_headers:
-  'X-Forwarded-Proto': 'https'
-  'X-Forwarded-Ssl': 'on'
+  X-Forwarded-Proto: https
+  X-Forwarded-Ssl: "on"

@@ -2,8 +2,8 @@
 - tags:
     - repo_mongodb
   block:
-
     # https://www.mongodb.com/docs/v6.0/tutorial/install-mongodb-on-debian/
+
     - name: "Apt install gnupg # required for apt-key add"
       ansible.builtin.package:
         name:

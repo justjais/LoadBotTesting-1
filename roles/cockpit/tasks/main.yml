@@ -2,7 +2,6 @@
 - tags:
     - cockpit
   block:
-
     - name: Dnf -y remove 'cockpit*'
       ansible.builtin.package:
         name: cockpit*

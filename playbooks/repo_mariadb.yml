@@ -1,7 +1,7 @@
-- name: 'Manage and configure the MariaDB Repository'
+---
+- name: Manage and configure the MariaDB Repository
   hosts:
-    - 'lfops_repo_mariadb'
+    - lfops_repo_mariadb
 
   roles:
-
-    - role: 'linuxfabrik.lfops.repo_mariadb'
+    - role: linuxfabrik.lfops.repo_mariadb

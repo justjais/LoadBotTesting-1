@@ -11,7 +11,6 @@
 - tags:
     - monitoring_plugins
   block:
-
     - name: Ensure the lib folder exists (Linux)
       ansible.builtin.file:
         path: /usr/lib64/nagios/plugins/lib
@@ -39,12 +38,10 @@
     - when: not monitoring_plugins__skip_notification_plugins__combined_var | bool
 
       block:
-
         - delegate_to: localhost
           check_mode: false # run task even if `--check` is specified
 
           block:
-
             - name: Create the list of available notification plugins
               ansible.builtin.find:
                 paths: /tmp/ansible.monitoring-plugins-repo/notification-plugins/

@@ -2,7 +2,6 @@
 - tags:
     - unattended_upgrades
   block:
-
     - name: Disable unattended upgrades
       ansible.builtin.lineinfile:
         dest: /etc/apt/apt.conf.d/20auto-upgrades

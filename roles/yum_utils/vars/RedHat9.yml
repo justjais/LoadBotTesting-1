@@ -1,1 +1,2 @@
-yum_utils__package: 'dnf-utils'
+---
+yum_utils__package: dnf-utils

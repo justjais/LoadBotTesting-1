@@ -14,7 +14,6 @@
     - fail2ban:state
 
   block:
-
     - name: Systemctl {{ fail2ban__service_enabled | bool | ternary("enable", "disable") }} --now fail2ban.service
       ansible.builtin.systemd:
         name: fail2ban.service
@@ -24,7 +23,6 @@
 - tags:
     - fail2ban
   block:
-
     - name: Deploy actions
       ansible.builtin.template:
         src: etc/fail2ban/action.d/{{ item }}.conf.j2

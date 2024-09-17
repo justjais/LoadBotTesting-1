@@ -1,46 +1,46 @@
+---
 - block:
+    - name: Set platform/version specific variables
+      ansible.builtin.import_role:
+        name: shared
+        tasks_from: platform-variables.yml
 
-  - name: 'Set platform/version specific variables'
-    ansible.builtin.import_role:
-      name: 'shared'
-      tasks_from: 'platform-variables.yml'
+    - name: Install logrotate
+      ansible.builtin.package:
+        name: logrotate
+        state: present
 
-  - name: 'Install logrotate'
-    ansible.builtin.package:
-      name: 'logrotate'
-      state: 'present'
+    - name: Copy logrotate.conf template to /etc
+      ansible.builtin.template:
+        src: etc/logrotate.conf.j2
+        dest: /etc/logrotate.conf
+        owner: root
+        group: root
+        mode: "0o644"
 
-  - name: 'Copy logrotate.conf template to /etc'
-    ansible.builtin.template:
-      src: 'etc/logrotate.conf.j2'
-      dest: '/etc/logrotate.conf'
-      owner: 'root'
-      group: 'root'
-      mode: 0o644
+    - name: Copy system logrotate templates to /etc/logrotate.d
+      ansible.builtin.template:
+        src: etc/logrotate.d/syslog.j2
+        dest: /etc/logrotate.d/{{ logrotate__syslog_filename }}
+        owner: root
+        group: root
+        mode: "0o644"
 
-  - name: 'Copy system logrotate templates to /etc/logrotate.d'
-    ansible.builtin.template:
-      src: 'etc/logrotate.d/syslog.j2'
-      dest: '/etc/logrotate.d/{{ logrotate__syslog_filename }}'
-      owner: 'root'
-      group: 'root'
-      mode: 0o644
+    - name: Check if custom logrotate configs for {{ inventory_hostname }} exist
+      ansible.builtin.stat:
+        path: "{{ inventory_dir }}/host_files/{{ inventory_hostname }}/etc/logrotate.d"
+      delegate_to: localhost
+      changed_when: false
+      register: logrotate__custom_configs
 
-  - name: 'Check if custom logrotate configs for {{ inventory_hostname }} exist'
-    ansible.builtin.stat:
-      path: '{{ inventory_dir }}/host_files/{{ inventory_hostname }}/etc/logrotate.d'
-    delegate_to: 'localhost'
-    changed_when: false
-    register: 'logrotate__custom_configs'
-
-  - name: 'Copy the custom logrotate configs to /etc/logrotate.d'
-    ansible.builtin.copy:
-      src: '{{ inventory_dir }}/host_files/{{ inventory_hostname }}/etc/logrotate.d/'
-      dest: '/etc/logrotate.d/'
-      owner: 'root'
-      group: 'root'
-      mode: 0o644
-    when: 'logrotate__custom_configs.stat.exists'
+    - name: Copy the custom logrotate configs to /etc/logrotate.d
+      ansible.builtin.copy:
+        src: "{{ inventory_dir }}/host_files/{{ inventory_hostname }}/etc/logrotate.d/"
+        dest: /etc/logrotate.d/
+        owner: root
+        group: root
+        mode: "0o644"
+      when: logrotate__custom_configs.stat.exists
 
   tags:
-    - 'logrotate'
+    - logrotate

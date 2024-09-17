@@ -1,7 +1,7 @@
-- name: 'Install and configure bind'
+---
+- name: Install and configure bind
   hosts:
-    - 'lfops_bind'
+    - lfops_bind
 
   roles:
-
-    - role: 'linuxfabrik.lfops.bind'
+    - role: linuxfabrik.lfops.bind

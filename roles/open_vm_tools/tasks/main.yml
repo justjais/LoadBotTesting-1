@@ -2,7 +2,6 @@
 - tags:
     - open_vm_tools
   block:
-
     - name: Install open-vm-tools
       ansible.builtin.package:
         name:

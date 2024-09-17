@@ -1,25 +1,25 @@
-- name: 'Manage and configure MongoDB'
+---
+- name: Manage and configure MongoDB
   hosts:
-    - 'lfops_mongodb'
+    - lfops_mongodb
 
   roles:
-
-    - role: 'linuxfabrik.lfops.kernel_settings'
-      kernel_settings__sysctl__dependent_var: '{{ mongodb__kernel_settings__sysctl__dependent_var | d([]) }}'
+    - role: linuxfabrik.lfops.kernel_settings
+      kernel_settings__sysctl__dependent_var: "{{ mongodb__kernel_settings__sysctl__dependent_var | d([]) }}"
       kernel_settings__transparent_hugepages__dependent_var: "{{ mongodb__kernel_settings__transparent_hugepages__dependent_var | d('') }}"
       when:
-        - 'not mongodb__skip_kernel_settings | d(false)'
+        - not mongodb__skip_kernel_settings | d(false)
 
-    - role: 'linuxfabrik.lfops.tar'
+    - role: linuxfabrik.lfops.tar
 
-    - role: 'linuxfabrik.lfops.python_venv'
+    - role: linuxfabrik.lfops.python_venv
       python_venv__venvs__dependent_var:
-        - '{{ mongodb__python_venv__venvs__dependent_var | d({}) }}'
+        - "{{ mongodb__python_venv__venvs__dependent_var | d({}) }}"
       when:
-        - 'not mongodb__skip_python_venv | d(false)'
+        - not mongodb__skip_python_venv | d(false)
 
-    - role: 'linuxfabrik.lfops.repo_mongodb'
+    - role: linuxfabrik.lfops.repo_mongodb
       when:
-        - 'not mongodb__skip_repo_mongodb | default(false)'
+        - not mongodb__skip_repo_mongodb | default(false)
 
-    - role: 'linuxfabrik.lfops.mongodb'
+    - role: linuxfabrik.lfops.mongodb

@@ -20,7 +20,6 @@
     - postfix
 
   block:
-
     - name: Remove all lines containing "relayhost"
       ansible.builtin.lineinfile:
         dest: /etc/postfix/main.cf
@@ -74,7 +73,7 @@
         mode: "0o600"
 
     - name: Create Postfix lookup table based on sasl_passwd file
-      ansible.builtin.command: postmap /etc/postfix/sasl_passwd
+
     - name: Chmod sasl_passwd.db
       ansible.builtin.file:
         path: /etc/postfix/sasl_passwd.db
@@ -89,7 +88,6 @@
     - postfix
     - postfix:state
   block:
-
     - name: "Systemctl: postfix enabled = {{ postfix__service_enabled }}"
       ansible.builtin.systemd:
         name: postfix.service

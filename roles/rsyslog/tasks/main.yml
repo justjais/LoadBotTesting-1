@@ -3,7 +3,6 @@
     - rsyslog
 
   block:
-
     - name: Install rsyslog
       ansible.builtin.package:
         name: rsyslog
@@ -14,7 +13,6 @@
     - rsyslog:state
 
   block:
-
     - name: Systemctl {{ rsyslog__service_enabled | bool | ternary("enable", "disable") }} rsyslog.service
       ansible.builtin.systemd:
         name: rsyslog.service
@@ -30,7 +28,6 @@
     - rsyslog
     - rsyslog:configure
   block:
-
     - name: "Combined Configs:"
       ansible.builtin.debug:
         var: rsyslog__conf__combined_var

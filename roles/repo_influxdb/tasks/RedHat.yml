@@ -2,7 +2,6 @@
 - tags:
     - repo_influxdb
   block:
-
     - name: Curl https://repos.influxdata.com/influxdata-archive_compat.key --output /tmp/ansible.influxdata-archive_compat.key
       ansible.builtin.get_url:
         url: https://repos.influxdata.com/influxdata-archive_compat.key

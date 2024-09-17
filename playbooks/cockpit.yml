@@ -1,7 +1,7 @@
-- name: 'Remove the cockpit packages'
+---
+- name: Remove the cockpit packages
   hosts:
-    - 'lfops_cockpit'
+    - lfops_cockpit
 
   roles:
-
-    - role: 'linuxfabrik.lfops.cockpit'
+    - role: linuxfabrik.lfops.cockpit

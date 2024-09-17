@@ -3,7 +3,6 @@
     - php
 
   block:
-
     - name: Install php php-fpm composer
       ansible.builtin.package:
         name:
@@ -17,7 +16,6 @@
     - php
 
   block:
-
     - name: "Combined Modules:"
       ansible.builtin.debug:
         var: php__modules__combined_var
@@ -40,7 +38,6 @@
     - php
 
   block:
-
     - name: Get the list of installed packages
       ansible.builtin.package_facts: # yamllint disable-line rule:empty-values
       check_mode: false # run task even if `--check` is specified
@@ -66,7 +63,6 @@
     - php
 
   block:
-
     - name: Systemctl {{ php__fpm_service_enabled | bool | ternary("enable", "disable") }} --now php-fpm
       ansible.builtin.service:
         name: php-fpm
@@ -77,7 +73,6 @@
     - php:fpm
     - php
   block:
-
     - name: Remove absent pools from /etc/php-fpm.d
       ansible.builtin.file:
         path: /etc/php-fpm.d/{{ item["name"] }}.conf

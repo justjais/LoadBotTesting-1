@@ -1,84 +1,80 @@
+---
 - block:
+    - name: install collabora and dependent packages
+      ansible.builtin.package:
+        name:
+          - '{{ collabora__use_code | bool | ternary("CODE-brand", "collabora-online-brand") }}'
+          - collaboraofficebasis-calc
+          - collaboraofficebasis-core
+          - collaboraofficebasis-draw
+          - collaboraofficebasis-extension-pdf-import
+          - collaboraofficebasis-graphicfilter
+          - collaboraofficebasis-images
+          - collaboraofficebasis-impress
+          - collaboraofficebasis-math
+          - collaboraofficebasis-ooofonts
+          - collaboraofficebasis-ooolinguistic
+          - collaboraofficebasis-python-script-provider
+          - collaboraofficebasis-pyuno
+          - collaboraofficebasis-writer
+          - coolwsd
+        state: present
 
-  - name: 'install collabora and dependent packages'
-    ansible.builtin.package:
-      name:
-        - '{{ collabora__use_code | bool | ternary("CODE-brand", "collabora-online-brand") }}'
-        - 'collaboraofficebasis-calc'
-        - 'collaboraofficebasis-core'
-        - 'collaboraofficebasis-draw'
-        - 'collaboraofficebasis-extension-pdf-import'
-        - 'collaboraofficebasis-graphicfilter'
-        - 'collaboraofficebasis-images'
-        - 'collaboraofficebasis-impress'
-        - 'collaboraofficebasis-math'
-        - 'collaboraofficebasis-ooofonts'
-        - 'collaboraofficebasis-ooolinguistic'
-        - 'collaboraofficebasis-python-script-provider'
-        - 'collaboraofficebasis-pyuno'
-        - 'collaboraofficebasis-writer'
-        - 'coolwsd'
-      state: 'present'
+    - name: touch /var/log/coolwsd.log & chmod 0660 /var/log/coolwsd.log
+      ansible.builtin.file:
+        path: /var/log/coolwsd.log
+        state: touch
+        owner: cool
+        group: cool
+        mode: "0o640"
 
-  - name: 'touch /var/log/coolwsd.log & chmod 0660 /var/log/coolwsd.log'
-    ansible.builtin.file:
-      path: '/var/log/coolwsd.log'
-      state: 'touch'
-      owner: 'cool'
-      group: 'cool'
-      mode: 0o640
+    - name: deploy /etc/coolwsd/coolwsd.xml
+      ansible.builtin.template:
+        src: '{{ collabora__use_code | bool | ternary("etc/coolwsd/coolwsd-code.xml.j2", "etc/coolwsd/coolwsd.xml.j2") }}'
+        dest: /etc/coolwsd/coolwsd.xml
+        owner: cool
+        group: cool
+        mode: "0o640"
+      notify: "collabora: restart coolwsd"
 
-  - name: 'deploy /etc/coolwsd/coolwsd.xml'
-    ansible.builtin.template:
-      src: '{{ collabora__use_code | bool | ternary("etc/coolwsd/coolwsd-code.xml.j2", "etc/coolwsd/coolwsd.xml.j2") }}'
-      dest: '/etc/coolwsd/coolwsd.xml'
-      owner: 'cool'
-      group: 'cool'
-      mode: 0o640
-    notify: 'collabora: restart coolwsd'
+    - name: Deploy /etc/logrotate.d/coolwsd
+      ansible.builtin.template:
+        src: etc/logrotate.d/coolwsd.j2
+        dest: /etc/logrotate.d/coolwsd
+        owner: root
+        group: root
+        mode: "0o644"
 
-  - name: 'Deploy /etc/logrotate.d/coolwsd'
-    ansible.builtin.template:
-      src: 'etc/logrotate.d/coolwsd.j2'
-      dest: '/etc/logrotate.d/coolwsd'
-      owner: 'root'
-      group: 'root'
-      mode: 0o644
-
-  - name: 'chown -R cool:cool /etc/coolwsd'
-    ansible.builtin.command: 'chown -R cool:cool /etc/coolwsd'
+    - name: chown -R cool:cool /etc/coolwsd
+      ansible.builtin.command: chown -R cool:cool /etc/coolwsd
 
   tags:
-    - 'collabora'
-
-
-- block:
-
-  - name: 'install spell checker'
-    ansible.builtin.package:
-      name:
-        - 'hunspell'
-        - 'mythes'
-      state: 'present'
-
-  - name: 'install language packages'
-    ansible.builtin.package:
-      name: '{{ collabora__language_packages__combined_var }}'
-      state: 'present'
-
-  tags:
-    - 'collabora'
-    - 'collabora:spell_check'
-
+    - collabora
 
 - block:
+    - name: install spell checker
+      ansible.builtin.package:
+        name:
+          - hunspell
+          - mythes
+        state: present
 
-  - name: 'systemctl {{ collabora__service_enabled | bool | ternary("enable", "disable") }} --now coolwsd.service'
-    ansible.builtin.systemd:
-      name: 'coolwsd.service'
-      enabled: '{{ collabora__service_enabled }}'
-      state: '{{ collabora__service_enabled | bool | ternary("started", "stopped") }}'
+    - name: install language packages
+      ansible.builtin.package:
+        name: "{{ collabora__language_packages__combined_var }}"
+        state: present
 
   tags:
-    - 'collabora'
-    - 'collabora:state'
+    - collabora
+    - collabora:spell_check
+
+- block:
+    - name: systemctl {{ collabora__service_enabled | bool | ternary("enable", "disable") }} --now coolwsd.service
+      ansible.builtin.systemd:
+        name: coolwsd.service
+        enabled: "{{ collabora__service_enabled }}"
+        state: '{{ collabora__service_enabled | bool | ternary("started", "stopped") }}'
+
+  tags:
+    - collabora
+    - collabora:state

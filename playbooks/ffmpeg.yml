@@ -1,21 +1,21 @@
-- name: 'Install ffpmeg'
+---
+- name: Install ffpmeg
   hosts:
-    - 'lfops_ffmpeg'
+    - lfops_ffmpeg
 
   roles:
-
-    - role: 'linuxfabrik.lfops.yum_utils'
+    - role: linuxfabrik.lfops.yum_utils
       when:
-        - 'not ffmpeg__skip_yum_utils | d(false)'
+        - not ffmpeg__skip_yum_utils | d(false)
 
-    - role: 'linuxfabrik.lfops.repo_epel'
+    - role: linuxfabrik.lfops.repo_epel
       when:
-        - 'not ffmpeg__skip_repo_epel | d(false)'
+        - not ffmpeg__skip_repo_epel | d(false)
 
-    - role: 'linuxfabrik.lfops.repo_rpmfusion'
+    - role: linuxfabrik.lfops.repo_rpmfusion
       when:
-        - 'not ffmpeg__skip_repo_rpmfusion | d(false)'
+        - not ffmpeg__skip_repo_rpmfusion | d(false)
 
-    - role: 'linuxfabrik.lfops.apps'
+    - role: linuxfabrik.lfops.apps
       apps__apps__dependent_var:
-        - name: 'ffmpeg'
+        - name: ffmpeg

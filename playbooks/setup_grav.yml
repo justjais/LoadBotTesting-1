@@ -1,50 +1,49 @@
-- name: 'Install and configure Grav'
+---
+- name: Install and configure Grav
   hosts:
-    - 'lfops_setup_grav'
+    - lfops_setup_grav
 
   roles:
-
-    - role: 'linuxfabrik.lfops.yum_utils'
+    - role: linuxfabrik.lfops.yum_utils
       when:
-        - 'ansible_facts["os_family"] == "RedHat"'
-        - 'not grav__skip_yum_utils | default(false)'
+        - ansible_facts["os_family"] == "RedHat"
+        - not grav__skip_yum_utils | default(false)
 
-    - role: 'linuxfabrik.lfops.policycoreutils'
+    - role: linuxfabrik.lfops.policycoreutils
       when:
-        - 'ansible_facts["os_family"] == "RedHat"'
-        - 'not grav__skip_policycoreutils | default(false)'
+        - ansible_facts["os_family"] == "RedHat"
+        - not grav__skip_policycoreutils | default(false)
 
-    - role: 'linuxfabrik.lfops.apps'
+    - role: linuxfabrik.lfops.apps
       apps__apps__dependent_var:
-        - '{{ grav__apps__apps__dependent_var }}'
+        - "{{ grav__apps__apps__dependent_var }}"
       when:
-        - 'not grav__skip_apps | default(false)'
+        - not grav__skip_apps | default(false)
 
-    - role: 'linuxfabrik.lfops.repo_remi'
+    - role: linuxfabrik.lfops.repo_remi
       when:
-        - 'ansible_facts["os_family"] == "RedHat" and ansible_facts["distribution_major_version"] in ["7", "8"]'
-        - 'not grav__skip_repo_remi | default(false)'
+        - ansible_facts["os_family"] == "RedHat" and ansible_facts["distribution_major_version"] in ["7", "8"]
+        - not grav__skip_repo_remi | default(false)
 
-    - role: 'linuxfabrik.lfops.php'
+    - role: linuxfabrik.lfops.php
       php__modules__dependent_var:
-        - '{{ grav__php__modules__dependent_var | default([]) }}'
+        - "{{ grav__php__modules__dependent_var | default([]) }}"
       when:
-        - 'not grav__skip_php | default(false)'
+        - not grav__skip_php | default(false)
 
-    - role: 'linuxfabrik.lfops.apache_httpd'
-      apache_httpd__mods__dependent_var: '{{ grav__apache_httpd__mods__dependent_var | d([]) }}'
-      apache_httpd__vhosts__dependent_var: '{{ grav__apache_httpd__vhosts__dependent_var | d([]) }}'
+    - role: linuxfabrik.lfops.apache_httpd
+      apache_httpd__mods__dependent_var: "{{ grav__apache_httpd__mods__dependent_var | d([]) }}"
+      apache_httpd__vhosts__dependent_var: "{{ grav__apache_httpd__vhosts__dependent_var | d([]) }}"
       when:
-        - 'not grav__skip_apache_httpd | default(false)'
+        - not grav__skip_apache_httpd | default(false)
 
-    - role: 'linuxfabrik.lfops.selinux'
+    - role: linuxfabrik.lfops.selinux
       selinux__booleans__dependent_var:
-        - '{{ grav__selinux__booleans__dependent_var }}'
+        - "{{ grav__selinux__booleans__dependent_var }}"
       selinux__fcontexts__dependent_var:
-        - '{{ grav__selinux__fcontexts__dependent_var }}'
+        - "{{ grav__selinux__fcontexts__dependent_var }}"
       when:
-        - 'ansible_facts["os_family"] == "RedHat"'
-        - 'not setup_grav__skip_selinux | default(false)'
+        - ansible_facts["os_family"] == "RedHat"
+        - not setup_grav__skip_selinux | default(false)
 
-    - role: 'linuxfabrik.lfops.grav'
-
+    - role: linuxfabrik.lfops.grav

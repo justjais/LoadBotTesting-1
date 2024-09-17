@@ -1,7 +1,7 @@
-- name: 'Manage and configure the Grafana OSS Repository'
+---
+- name: Manage and configure the Grafana OSS Repository
   hosts:
-    - 'lfops_repo_grafana'
+    - lfops_repo_grafana
 
   roles:
-
-    - role: 'linuxfabrik.lfops.repo_grafana'
+    - role: linuxfabrik.lfops.repo_grafana

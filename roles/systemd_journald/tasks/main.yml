@@ -3,7 +3,6 @@
     - systemd_journald
 
   block:
-
     - name: Mkdir -p /var/log/journal
       ansible.builtin.file:
         path: /var/log/journal
@@ -29,7 +28,6 @@
     - systemd_journald
     - systemd_journald:state
   block:
-
     - name: Systemctl {{ systemd_journald__service_enabled | bool | ternary("enable", "disable") }} systemd-journald
       ansible.builtin.systemd:
         name: systemd-journald

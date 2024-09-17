@@ -1,188 +1,176 @@
-- name: 'Install and configure Icinga2 as a master'
+---
+- name: Install and configure Icinga2 as a master
   hosts:
-    - 'lfops_setup_icinga2_master'
+    - lfops_setup_icinga2_master
 
   roles:
-
-    - role: 'linuxfabrik.lfops.repo_epel'
+    - role: linuxfabrik.lfops.repo_epel
       when:
-        - 'ansible_facts["os_family"] == "RedHat" and ansible_facts["distribution_major_version"] in ["7", "8"]'
-        - 'not setup_icinga2_master__skip_repo_epel | default(false)'
+        - ansible_facts["os_family"] == "RedHat" and ansible_facts["distribution_major_version"] in ["7", "8"]
+        - not setup_icinga2_master__skip_repo_epel | default(false)
 
-    - role: 'linuxfabrik.lfops.repo_mariadb'
+    - role: linuxfabrik.lfops.repo_mariadb
       when:
-        - 'ansible_facts["os_family"] == "RedHat" and ansible_facts["distribution_major_version"] in ["7", "8"]'
-        - 'not setup_icinga2_master__skip_repo_mariadb | default(false)'
+        - ansible_facts["os_family"] == "RedHat" and ansible_facts["distribution_major_version"] in ["7", "8"]
+        - not setup_icinga2_master__skip_repo_mariadb | default(false)
 
-    - role: 'linuxfabrik.lfops.python'
-      python__modules__dependent_var: '{{ mariadb_server__python__modules__dependent_var }}'
+    - role: linuxfabrik.lfops.python
+      python__modules__dependent_var: "{{ mariadb_server__python__modules__dependent_var }}"
       when:
-        - 'not setup_icinga2_master__skip_python | default(false)'
+        - not setup_icinga2_master__skip_python | default(false)
 
-    - role: 'linuxfabrik.lfops.repo_mydumper'
+    - role: linuxfabrik.lfops.repo_mydumper
       when:
-        - 'not setup_icinga2_master__skip_repo_mydumper | default(false)'
+        - not setup_icinga2_master__skip_repo_mydumper | default(false)
 
-    - role: 'linuxfabrik.lfops.mariadb_server'
+    - role: linuxfabrik.lfops.mariadb_server
       mariadb_server__databases__dependent_var:
-        - '{{ icinga2_master__mariadb_server__databases__dependent_var }}'
-        - '{{ icingadb__mariadb_server__databases__dependent_var }}'
-        - '{{ icingaweb2__mariadb_server__databases__dependent_var }}'
-        - '{{ icingaweb2_module_director__mariadb_server__databases__dependent_var }}'
+        - "{{ icinga2_master__mariadb_server__databases__dependent_var }}"
+        - "{{ icingadb__mariadb_server__databases__dependent_var }}"
+        - "{{ icingaweb2__mariadb_server__databases__dependent_var }}"
+        - "{{ icingaweb2_module_director__mariadb_server__databases__dependent_var }}"
       mariadb_server__users__dependent_var:
-        - '{{ icinga2_master__mariadb_server__users__dependent_var }}'
-        - '{{ icingadb__mariadb_server__users__dependent_var }}'
-        - '{{ icingaweb2__mariadb_server__users__dependent_var }}'
-        - '{{ icingaweb2_module_director__mariadb_server__users__dependent_var }}'
+        - "{{ icinga2_master__mariadb_server__users__dependent_var }}"
+        - "{{ icingadb__mariadb_server__users__dependent_var }}"
+        - "{{ icingaweb2__mariadb_server__users__dependent_var }}"
+        - "{{ icingaweb2_module_director__mariadb_server__users__dependent_var }}"
       when:
-        - 'not setup_icinga2_master__skip_mariadb_server | default(false)'
+        - not setup_icinga2_master__skip_mariadb_server | default(false)
 
-    - role: 'linuxfabrik.lfops.repo_influxdb'
+    - role: linuxfabrik.lfops.repo_influxdb
       when:
-        - 'not setup_icinga2_master__skip_repo_influxdb | default(false)'
+        - not setup_icinga2_master__skip_repo_influxdb | default(false)
 
-    - role: 'linuxfabrik.lfops.python_venv'
+    - role: linuxfabrik.lfops.python_venv
       python_venv__venvs__dependent_var:
-        - '{{ influxdb__python_venv__venvs__dependent_var }}'
+        - "{{ influxdb__python_venv__venvs__dependent_var }}"
       when:
-        - 'not setup_icinga2_master__skip_python_venv | default(false)'
+        - not setup_icinga2_master__skip_python_venv | default(false)
 
-    - role: 'linuxfabrik.lfops.influxdb'
+    - role: linuxfabrik.lfops.influxdb
       influxdb__databases__dependent_var:
-        - '{{ icinga2_master__influxdb__databases__dependent_var }}'
+        - "{{ icinga2_master__influxdb__databases__dependent_var }}"
       influxdb__users__dependent_var:
-        - '{{ icinga2_master__influxdb__users__dependent_var }}'
-        - '{{ monitoring_plugins_grafana_dashboards__influxdb__users__dependent_var }}'
+        - "{{ icinga2_master__influxdb__users__dependent_var }}"
+        - "{{ monitoring_plugins_grafana_dashboards__influxdb__users__dependent_var }}"
       when:
-        - 'not setup_icinga2_master__skip_influxdb | default(false)'
+        - not setup_icinga2_master__skip_influxdb | default(false)
 
-    - role: 'linuxfabrik.lfops.repo_monitoring_plugins'
+    - role: linuxfabrik.lfops.repo_monitoring_plugins
       when:
-        - 'not setup_icinga2_master__skip_repo_monitoring_plugins | d(false)'
+        - not setup_icinga2_master__skip_repo_monitoring_plugins | d(false)
 
-    - role: 'linuxfabrik.lfops.monitoring_plugins'
-      monitoring_plugins__skip_notification_plugins__dependent_var: '{{ icinga2_master__monitoring_plugins__skip_notification_plugins__dependent_var }}'
+    - role: linuxfabrik.lfops.monitoring_plugins
+      monitoring_plugins__skip_notification_plugins__dependent_var: "{{ icinga2_master__monitoring_plugins__skip_notification_plugins__dependent_var }}"
       when:
-        - 'not setup_icinga2_master__skip_monitoring_plugins | d(false)'
+        - not setup_icinga2_master__skip_monitoring_plugins | d(false)
 
-    - role: 'linuxfabrik.lfops.repo_icinga'
+    - role: linuxfabrik.lfops.repo_icinga
       when:
-        - 'not setup_icinga2_master__skip_repo_icinga | default(false)'
+        - not setup_icinga2_master__skip_repo_icinga | default(false)
 
-    - role: 'linuxfabrik.lfops.icinga2_master'
-      icinga2_master__api_users__dependent_var: '{{
-          icingadb__icinga2_master__api_users__dependent_var +
-          icingaweb2__icinga2_master__api_users__dependent_var +
-          icingaweb2_module_director__icinga2_master__api_users__dependent_var
-        }}'
+    - role: linuxfabrik.lfops.icinga2_master
+      icinga2_master__api_users__dependent_var: "{{ icingadb__icinga2_master__api_users__dependent_var + icingaweb2__icinga2_master__api_users__dependent_var + icingaweb2_module_director__icinga2_master__api_users__dependent_var
+        }}"
       when:
-        - 'not setup_icinga2_master__skip_icinga2_master | default(false)'
+        - not setup_icinga2_master__skip_icinga2_master | default(false)
 
-    - role: 'linuxfabrik.lfops.policycoreutils'
+    - role: linuxfabrik.lfops.policycoreutils
       when:
-        - 'ansible_facts["os_family"] == "RedHat"'
-        - 'not setup_icinga2_master__skip_policycoreutils | default(false)'
+        - ansible_facts["os_family"] == "RedHat"
+        - not setup_icinga2_master__skip_policycoreutils | default(false)
 
-    - role: 'linuxfabrik.lfops.selinux'
+    - role: linuxfabrik.lfops.selinux
       selinux__booleans__dependent_var:
-        - '{{ apache_httpd__selinux__booleans__dependent_var }}'
-        - '{{ icinga2_master__selinux__booleans__dependent_var }}'
+        - "{{ apache_httpd__selinux__booleans__dependent_var }}"
+        - "{{ icinga2_master__selinux__booleans__dependent_var }}"
       when:
-        - 'ansible_facts["os_family"] == "RedHat"'
-        - 'not setup_icinga2_master__skip_selinux | default(false)'
+        - ansible_facts["os_family"] == "RedHat"
+        - not setup_icinga2_master__skip_selinux | default(false)
 
-    - role: 'linuxfabrik.lfops.yum_utils'
+    - role: linuxfabrik.lfops.yum_utils
       when:
-        - 'ansible_facts["os_family"] == "RedHat"'
-        - 'not setup_icinga2_master__skip_yum_utils | default(false)'
+        - ansible_facts["os_family"] == "RedHat"
+        - not setup_icinga2_master__skip_yum_utils | default(false)
 
-    - role: 'linuxfabrik.lfops.repo_remi'
+    - role: linuxfabrik.lfops.repo_remi
       when:
-        - 'ansible_facts["os_family"] == "RedHat" and ansible_facts["distribution_major_version"] in ["7", "8"]'
-        - 'not setup_icinga2_master__skip_repo_remi | default(false)'
+        - ansible_facts["os_family"] == "RedHat" and ansible_facts["distribution_major_version"] in ["7", "8"]
+        - not setup_icinga2_master__skip_repo_remi | default(false)
 
-    - role: 'linuxfabrik.lfops.php'
-      php__ini_upload_max_filesize__dependent_var: '{{ icingaweb2__php__ini_upload_max_filesize__dependent_var }}'
+    - role: linuxfabrik.lfops.php
+      php__ini_upload_max_filesize__dependent_var: "{{ icingaweb2__php__ini_upload_max_filesize__dependent_var }}"
       php__modules__dependent_var:
-        - '{{ icingaweb2__php__modules__dependent_var }}'
+        - "{{ icingaweb2__php__modules__dependent_var }}"
       when:
-        - 'not setup_icinga2_master__skip_php | default(false)'
+        - not setup_icinga2_master__skip_php | default(false)
 
-    - role: 'linuxfabrik.lfops.apache_httpd'
-      apache_httpd__mods__dependent_var: '{{ icingaweb2__apache_httpd__mods__dependent_var }}'
-      apache_httpd__vhosts__dependent_var: '{{ icingaweb2__apache_httpd__vhosts__dependent_var }}'
+    - role: linuxfabrik.lfops.apache_httpd
+      apache_httpd__mods__dependent_var: "{{ icingaweb2__apache_httpd__mods__dependent_var }}"
+      apache_httpd__vhosts__dependent_var: "{{ icingaweb2__apache_httpd__vhosts__dependent_var }}"
       when:
-        - 'not setup_icinga2_master__skip_apache_httpd | default(false)'
+        - not setup_icinga2_master__skip_apache_httpd | default(false)
 
-    - role: 'linuxfabrik.lfops.icingaweb2'
-      icingaweb2__navigation_menu_entries__dependent_var: '{{
-          icingaweb2_module_grafana__icingaweb2__navigation_menu_entries__dependent_var
-        }}'
-      icingaweb2__resources__dependent_var: '{{
-          icingadb__icingaweb2__resources__dependent_var +
-          icingaweb2_module_director__icingaweb2__resources__dependent_var +
-          icingaweb2_module_monitoring__icingaweb2__resources__dependent_var
-        }}'
-      icingaweb2__users__dependent_var: '{{
-          icingaweb2_module_director__icingaweb2__users__dependent_var
-        }}'
+    - role: linuxfabrik.lfops.icingaweb2
+      icingaweb2__navigation_menu_entries__dependent_var: "{{ icingaweb2_module_grafana__icingaweb2__navigation_menu_entries__dependent_var }}"
+      icingaweb2__resources__dependent_var: "{{ icingadb__icingaweb2__resources__dependent_var + icingaweb2_module_director__icingaweb2__resources__dependent_var
+        + icingaweb2_module_monitoring__icingaweb2__resources__dependent_var }}"
+      icingaweb2__users__dependent_var: "{{ icingaweb2_module_director__icingaweb2__users__dependent_var }}"
       when:
-        - 'not setup_icinga2_master__skip_icingaweb2 | default(false)'
+        - not setup_icinga2_master__skip_icingaweb2 | default(false)
 
-    - role: 'linuxfabrik.lfops.kernel_settings'
-      kernel_settings__sysctl__dependent_var: '{{
-          mariadb_server__kernel_settings__sysctl__dependent_var | d([]) +
-          redis__kernel_settings__sysctl__dependent_var | d([])
-        }}'
+    - role: linuxfabrik.lfops.kernel_settings
+      kernel_settings__sysctl__dependent_var: "{{ mariadb_server__kernel_settings__sysctl__dependent_var | d([]) + redis__kernel_settings__sysctl__dependent_var |
+        d([]) }}"
       kernel_settings__transparent_hugepages__dependent_var: "{{ redis__kernel_settings__transparent_hugepages__dependent_var | d('') }}"
       when:
-        - 'not setup_icinga2_master__skip_kernel_settings | d(false)'
+        - not setup_icinga2_master__skip_kernel_settings | d(false)
 
-    - role: 'linuxfabrik.lfops.redis'
+    - role: linuxfabrik.lfops.redis
       when:
-        - 'not setup_icinga2_master__skip_redis | default(false)'
+        - not setup_icinga2_master__skip_redis | default(false)
 
-    - role: 'linuxfabrik.lfops.icingadb'
+    - role: linuxfabrik.lfops.icingadb
       when:
-        - 'not setup_icinga2_master__skip_icingadb | default(false)'
+        - not setup_icinga2_master__skip_icingadb | default(false)
 
-    - role: 'linuxfabrik.lfops.icingaweb2_module_doc'
+    - role: linuxfabrik.lfops.icingaweb2_module_doc
       when:
-        - 'not setup_icinga2_master__skip_icingaweb2_module_doc | default(true)'
+        - not setup_icinga2_master__skip_icingaweb2_module_doc | default(true)
 
-    - role: 'linuxfabrik.lfops.icingaweb2_module_monitoring'
+    - role: linuxfabrik.lfops.icingaweb2_module_monitoring
       when:
-        - 'not setup_icinga2_master__skip_icingaweb2_module_monitoring | default(true)'
+        - not setup_icinga2_master__skip_icingaweb2_module_monitoring | default(true)
 
-    - role: 'linuxfabrik.lfops.icingaweb2_module_company'
+    - role: linuxfabrik.lfops.icingaweb2_module_company
       when:
-        - 'not setup_icinga2_master__skip_icingaweb2_module_company | default(false)'
+        - not setup_icinga2_master__skip_icingaweb2_module_company | default(false)
 
-    - role: 'linuxfabrik.lfops.icingaweb2_module_incubator'
+    - role: linuxfabrik.lfops.icingaweb2_module_incubator
       when:
-        - 'not setup_icinga2_master__skip_icingaweb2_module_incubator | default(false)'
+        - not setup_icinga2_master__skip_icingaweb2_module_incubator | default(false)
 
-    - role: 'linuxfabrik.lfops.icingaweb2_module_director'
+    - role: linuxfabrik.lfops.icingaweb2_module_director
       when:
-        - 'not setup_icinga2_master__skip_icingaweb2_module_director | default(false)'
+        - not setup_icinga2_master__skip_icingaweb2_module_director | default(false)
 
-    - role: 'linuxfabrik.lfops.repo_grafana'
+    - role: linuxfabrik.lfops.repo_grafana
       when:
-        - 'not setup_icinga2_master__skip_repo_grafana | default(false)'
+        - not setup_icinga2_master__skip_repo_grafana | default(false)
 
-    - role: 'linuxfabrik.lfops.grafana'
-      grafana__provisioning_datasources__dependent_var: '{{ monitoring_plugins_grafana_dashboards__grafana__provisioning_datasources__dependent_var }}'
+    - role: linuxfabrik.lfops.grafana
+      grafana__provisioning_datasources__dependent_var: "{{ monitoring_plugins_grafana_dashboards__grafana__provisioning_datasources__dependent_var }}"
       when:
-        - 'not setup_icinga2_master__skip_grafana | default(false)'
+        - not setup_icinga2_master__skip_grafana | default(false)
 
-    - role: 'linuxfabrik.lfops.grafana_grizzly'
+    - role: linuxfabrik.lfops.grafana_grizzly
       when:
-        - 'not setup_icinga2_master__skip_grafana_grizzly | default(false)'
+        - not setup_icinga2_master__skip_grafana_grizzly | default(false)
 
-    - role: 'linuxfabrik.lfops.icingaweb2_module_grafana'
+    - role: linuxfabrik.lfops.icingaweb2_module_grafana
       when:
-        - 'not setup_icinga2_master__skip_icingaweb2_module_grafana | default(false)'
+        - not setup_icinga2_master__skip_icingaweb2_module_grafana | default(false)
 
-    - role: 'linuxfabrik.lfops.monitoring_plugins_grafana_dashboards'
+    - role: linuxfabrik.lfops.monitoring_plugins_grafana_dashboards
       when:
-        - 'not setup_icinga2_master__skip_monitoring_plugins_grafana_dashboards | d(false)'
+        - not setup_icinga2_master__skip_monitoring_plugins_grafana_dashboards | d(false)

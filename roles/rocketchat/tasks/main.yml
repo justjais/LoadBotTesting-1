@@ -4,7 +4,6 @@
 
   # this stays in this role, since the management of node versions with n is too specific to Rocket.Chat
   block:
-
     - name: Groupadd --system rocketchat
       ansible.builtin.group:
         name: rocketchat
@@ -45,7 +44,6 @@
     - rocketchat:update
 
   block:
-
     - name: Get version dependencies from api
       ansible.builtin.uri:
         url: https://releases.rocket.chat/{{ rocketchat__version }}/info
@@ -56,7 +54,6 @@
       check_mode: false # run task even if `--check` is specified
 
     - block:
-
         - name: Get the installed MongoDB version
           ansible.builtin.set_fact:
             rocketchat__installed_mongodb_version: '{{ ansible_facts["packages"]["mongodb-org"][0]["version"] | regex_replace("\.\d+$", "") }}'
@@ -67,7 +64,6 @@
             fail_msg: MongoDB version {{ rocketchat__installed_mongodb_version }} is not supported by Rocket.Chat version {{ rocketchat__version }}
 
       rescue:
-
         - ansible.builtin.debug:
             msg: Please manually check if MongoDB version {{ rocketchat__installed_mongodb_version }} is supported by Rocket.Chat version {{ rocketchat__version }}
               on https://github.com/RocketChat/Rocket.Chat/releases/{{ rocketchat__version }}
@@ -78,7 +74,7 @@
 
     - name: Npm --global install n
       community.general.npm:
-        name: "n"
+        name: false
         global: true
 
     - name: Check to see if n has installed the required binaries in {{ rocketchat__node_prefix }}
@@ -117,7 +113,6 @@
     - rocketchat:update
 
   block:
-
     - name: Systemctl stop rocketchat.service
       ansible.builtin.systemd:
         name: rocketchat.service
@@ -133,7 +128,6 @@
     - rocketchat:update
 
   block:
-
     - name: Unpack the Rocket.Chat binary tarball
       ansible.builtin.unarchive:
         copy: false
@@ -154,15 +148,13 @@
       environment:
         PATH: '{{ rocketchat__node_prefix }}/bin:{{ ansible_facts["env"]["PATH"] }}'
 
-    # magnitudes faster than using the ansible.builtin.file module
     - name: Ensure the Rocket.Chat application data permissions are correct
-      ansible.builtin.command: chown rocketchat:rocketchat -R {{ rocketchat__application_path | quote }}
+
 - tags:
     - rocketchat
     - rocketchat:update
 
   block:
-
     - name: Deploy the Rocket.Chat service file
       ansible.builtin.template:
         src: etc/systemd/system/rocketchat.service.j2
@@ -184,7 +176,6 @@
     - rocketchat:update
 
   block:
-
     - name: Systemctl {{ rocketchat__service_enabled | bool | ternary("enable", "disable") }} rocketchat.service
       ansible.builtin.systemd:
         name: rocketchat.service
@@ -200,7 +191,6 @@
     - rocketchat
     - rocketchat:update
   block:
-
     - name: Rm {{ rocketchat__application_path }}/rocket.chat-{{ rocketchat__version }}.tgz
       ansible.builtin.file:
         path: "{{ rocketchat__application_path }}/rocket.chat-{{ rocketchat__version }}.tgz"

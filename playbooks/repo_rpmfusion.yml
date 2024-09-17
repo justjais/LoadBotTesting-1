@@ -1,15 +1,15 @@
-- name: 'Manage and configure the RPM Fusion Repository'
+---
+- name: Manage and configure the RPM Fusion Repository
   hosts:
-    - 'lfops_repo_rpmfusion'
+    - lfops_repo_rpmfusion
 
   roles:
-
-    - role: 'linuxfabrik.lfops.yum_utils'
+    - role: linuxfabrik.lfops.yum_utils
       when:
-        - 'not repo_rpmfusion__skip_yum_utils | d(false)'
+        - not repo_rpmfusion__skip_yum_utils | d(false)
 
-    - role: 'linuxfabrik.lfops.repo_epel'
+    - role: linuxfabrik.lfops.repo_epel
       when:
-        - 'not repo_rpmfusion__skip_repo_epel | d(false)'
+        - not repo_rpmfusion__skip_repo_epel | d(false)
 
-    - role: 'linuxfabrik.lfops.repo_rpmfusion'
+    - role: linuxfabrik.lfops.repo_rpmfusion

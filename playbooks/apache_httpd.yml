@@ -1,28 +1,28 @@
-- name: 'Install apache_httpd'
+---
+- name: Install apache_httpd
   hosts:
-    - 'lfops_apache_httpd'
+    - lfops_apache_httpd
 
   roles:
-
-    - role: 'linuxfabrik.lfops.yum_utils'
+    - role: linuxfabrik.lfops.yum_utils
       when:
-        - 'not apache_httpd__skip_yum_utils | default(false)'
+        - not apache_httpd__skip_yum_utils | default(false)
 
-    - role: 'linuxfabrik.lfops.repo_epel'
+    - role: linuxfabrik.lfops.repo_epel
       when:
-        - 'ansible_facts["os_family"] == "RedHat" and ansible_facts["distribution_major_version"] in ["7", "8"]'
-        - 'not apache_httpd__skip_repo_epel | default(false)'
+        - ansible_facts["os_family"] == "RedHat" and ansible_facts["distribution_major_version"] in ["7", "8"]
+        - not apache_httpd__skip_repo_epel | default(false)
 
-    - role: 'linuxfabrik.lfops.policycoreutils'
+    - role: linuxfabrik.lfops.policycoreutils
       when:
-        - 'ansible_facts["os_family"] == "RedHat"'
-        - 'not apache_httpd__skip_policycoreutils | default(false)'
+        - ansible_facts["os_family"] == "RedHat"
+        - not apache_httpd__skip_policycoreutils | default(false)
 
-    - role: 'linuxfabrik.lfops.selinux'
+    - role: linuxfabrik.lfops.selinux
       selinux__booleans__dependent_var:
-        - '{{ apache_httpd__selinux__booleans__dependent_var }}'
+        - "{{ apache_httpd__selinux__booleans__dependent_var }}"
       when:
-        - 'ansible_facts["os_family"] == "RedHat"'
-        - 'not apache_httpd__skip_selinux | default(false)'
+        - ansible_facts["os_family"] == "RedHat"
+        - not apache_httpd__skip_selinux | default(false)
 
-    - role: 'linuxfabrik.lfops.apache_httpd'
+    - role: linuxfabrik.lfops.apache_httpd

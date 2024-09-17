@@ -1,19 +1,19 @@
+---
 - block:
+    - name: "Combined Apps:"
+      ansible.builtin.debug:
+        var: apps__apps__combined_var
 
-  - name: 'Combined Apps:'
-    ansible.builtin.debug:
-      var: 'apps__apps__combined_var'
+    - name: Remove apps using the package manager
+      ansible.builtin.package:
+        name: '{{ apps__apps__combined_var | selectattr("state", "defined") | selectattr("state", "eq", "absent") | map(attribute="name") }}'
+        state: absent
 
-  - name: 'Remove apps using the package manager'
-    ansible.builtin.package:
-      name: '{{ apps__apps__combined_var | selectattr("state", "defined") | selectattr("state", "eq", "absent") | map(attribute="name") }}'
-      state: 'absent'
-
-  - name: 'Deploy apps using the package manager'
-    ansible.builtin.package:
-      name: '{{ (apps__apps__combined_var | selectattr("state", "defined") | selectattr("state", "ne", "absent") | map(attribute="name"))
-          + (apps__apps__combined_var | selectattr("state", "undefined") | map(attribute="name")) }}'
-      state: 'present'
+    - name: Deploy apps using the package manager
+      ansible.builtin.package:
+        name: '{{ (apps__apps__combined_var | selectattr("state", "defined") | selectattr("state", "ne", "absent") | map(attribute="name")) + (apps__apps__combined_var
+          | selectattr("state", "undefined") | map(attribute="name")) }}'
+        state: present
 
   tags:
-    - 'apps'
+    - apps

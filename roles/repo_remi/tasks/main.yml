@@ -10,7 +10,6 @@
     - repo_remi
 
   block:
-
     - name: 'Deploy the repo files (mirror: {{ repo_remi__mirror_url | d("public mirrors") }})'
       ansible.builtin.template:
         src: "{{ item }}.j2"

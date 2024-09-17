@@ -3,7 +3,6 @@
     - icingaweb2_module_grafana
 
   block:
-
     - name: Mkdir -p /etc/icingaweb2/modules/grafana
       ansible.builtin.file:
         path: /etc/icingaweb2/modules/grafana
@@ -66,7 +65,6 @@
     - icingaweb2_module_grafana
     - icingaweb2_module_grafana:monitoring_plugins_graphs
   block:
-
     - name: Clone the monitoring plugins repo
       ansible.builtin.import_role:
         name: shared

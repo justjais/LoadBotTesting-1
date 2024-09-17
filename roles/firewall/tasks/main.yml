@@ -3,7 +3,6 @@
     - firewall
 
   block:
-
     - name: Get the list of services
       ansible.builtin.service_facts: # yamllint disable-line rule:empty-values
 
@@ -78,7 +77,6 @@
     - firewall
 
   block:
-
     - name: Be sure firewalld is started, enabled and not masked
       ansible.builtin.systemd:
         name: firewalld.service
@@ -91,7 +89,6 @@
     - firewall
 
   block:
-
     - name: Make sure iptables is installed (required for fwb)
       ansible.builtin.package:
         name: iptables
@@ -116,7 +113,6 @@
     - firewall
 
   block:
-
     - name: Make sure iptables-services is installed
       ansible.builtin.package:
         name: iptables-services
@@ -145,7 +141,6 @@
     - firewall
 
   block:
-
     - name: Be sure nftables is started, enabled and not masked
       ansible.builtin.systemd:
         name: nftables.service
@@ -157,7 +152,6 @@
   tags:
     - firewall
   block:
-
     - name: Be sure ufw is started, enabled and not masked
       ansible.builtin.systemd:
         name: ufw.service

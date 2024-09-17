@@ -2,7 +2,6 @@
 - tags:
     - repo_gitlab_ce
   block:
-
     - name: "Deploy the GitLab CE repo (mirror: {{ repo_gitlab_ce__mirror_url }})"
       ansible.builtin.template:
         src: etc/yum.repos.d/gitlab_gitlab-ce.repo.j2

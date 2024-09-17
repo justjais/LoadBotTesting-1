@@ -1,41 +1,41 @@
+---
 - block:
+    - name: Set platform/version specific variables
+      ansible.builtin.import_role:
+        name: shared
+        tasks_from: platform-variables.yml
 
-  - name: 'Set platform/version specific variables'
-    ansible.builtin.import_role:
-      name: 'shared'
-      tasks_from: 'platform-variables.yml'
+    - name: Install python3-virtualenv python3-devel
+      ansible.builtin.package:
+        name: "{{ python_venv__required_packages }}"
+        state: present
 
-  - name: 'Install python3-virtualenv python3-devel'
-    ansible.builtin.package:
-      name: '{{ python_venv__required_packages }}'
-      state: 'present'
+    # - name: 'Deploy /etc/systemd/system/python-venv-update.service'
+    #   ansible.builtin.template:
+    #     src: 'etc/systemd/system/python-venv-update.service.j2'
+    #     dest: '/etc/systemd/system/python-venv-update.service'
+    #     owner: 'root'
+    #     group: 'root'
+    #     mode: 0644
 
-  # - name: 'Deploy /etc/systemd/system/python-venv-update.service'
-  #   ansible.builtin.template:
-  #     src: 'etc/systemd/system/python-venv-update.service.j2'
-  #     dest: '/etc/systemd/system/python-venv-update.service'
-  #     owner: 'root'
-  #     group: 'root'
-  #     mode: 0644
+    # - name: 'Deploy /etc/systemd/system/python-venv-update.timer'
+    #   ansible.builtin.template:
+    #     src: 'etc/systemd/system/python-venv-update.timer.j2'
+    #     dest: '/etc/systemd/system/python-venv-update.timer'
+    #     owner: 'root'
+    #     group: 'root'
+    #     mode: 0644
 
-  # - name: 'Deploy /etc/systemd/system/python-venv-update.timer'
-  #   ansible.builtin.template:
-  #     src: 'etc/systemd/system/python-venv-update.timer.j2'
-  #     dest: '/etc/systemd/system/python-venv-update.timer'
-  #     owner: 'root'
-  #     group: 'root'
-  #     mode: 0644
+    - name: mkdir -p /opt/python-venv
+      ansible.builtin.file:
+        path: /opt/python-venv
+        state: directory
+        mode: "0o755"
 
-  - name: 'mkdir -p /opt/python-venv'
-    ansible.builtin.file:
-      path: '/opt/python-venv'
-      state: 'directory'
-      mode: 0o755
-
-  - ansible.builtin.include_tasks: 'create-venv.yml'
-    loop: '{{ python_venv__venvs__combined_var }}'
-    loop_control:
-      loop_var: 'venv'
+    - ansible.builtin.include_tasks: create-venv.yml
+      loop: "{{ python_venv__venvs__combined_var }}"
+      loop_control:
+        loop_var: venv
 
   tags:
-    - 'python_venv'
+    - python_venv

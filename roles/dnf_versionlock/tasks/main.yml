@@ -2,7 +2,6 @@
 - tags:
     - dnf_versionlock
   block:
-
     - name: Set platform/version specific variables
       ansible.builtin.import_role:
         name: shared

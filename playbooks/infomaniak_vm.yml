@@ -1,8 +1,8 @@
-- name: 'Setup and manage an Infomaniak VM'
+---
+- name: Setup and manage an Infomaniak VM
   hosts:
-    - 'lfops_infomaniak_vm'
+    - lfops_infomaniak_vm
   gather_facts: false
 
   roles:
-
-    - role: 'linuxfabrik.lfops.infomaniak_vm'
+    - role: linuxfabrik.lfops.infomaniak_vm

@@ -1,16 +1,17 @@
-librenms__config_auth_mechanism: 'mysql'
-librenms__config_update_channel: 'release'
-librenms__database_host: 'localhost'
-librenms__database_name: 'librenms'
+---
+librenms__config_auth_mechanism: mysql
+librenms__config_update_channel: release
+librenms__database_host: localhost
+librenms__database_name: librenms
 
 # -----------------------------------------------------------------------------
 
 librenms__apache_httpd__vhosts__dependent_var:
-  - by_role: 'librenms'
+  - by_role: librenms
     enabled: true
-    filename: 'librenms'
-    state: 'present'
-    type: 'app'
+    filename: librenms
+    state: present
+    type: app
 
     # TODO
     # allowed_file_extensions:
@@ -30,11 +31,11 @@ librenms__apache_httpd__vhosts__dependent_var:
     #   - 'woff2?'
 
     allowed_http_methods:
-      - 'DELETE'
-      - 'GET'
-      - 'OPTIONS'
-      - 'POST'
-      - 'PUT'
+      - DELETE
+      - GET
+      - OPTIONS
+      - POST
+      - PUT
 
     authz_file_extensions: |-
       Require all granted
@@ -44,84 +45,82 @@ librenms__apache_httpd__vhosts__dependent_var:
 
     virtualhost_port: 80
 
-    conf_allow_override: 'All' # TODO
-    conf_custom_log_format: 'combined'
-    conf_directory_index: 'index.php index.html index.htm'
-    conf_document_root: '/opt/librenms/html'
-    conf_server_name: '{{ librenms__fqdn }}'
+    conf_allow_override: All # TODO
+    conf_custom_log_format: combined
+    conf_directory_index: index.php index.html index.htm
+    conf_document_root: /opt/librenms/html
+    conf_server_name: "{{ librenms__fqdn }}"
 
-    php_set_handler: 'SetHandler "proxy:unix:/run/php-fpm/librenms.sock|fcgi://localhost"'
+    php_set_handler: SetHandler "proxy:unix:/run/php-fpm/librenms.sock|fcgi://localhost"
 
     raw: !unsafe |-
       AllowEncodedSlashes NoDecode
 
 
 librenms__apps__apps__dependent_var:
-  - name: 'git'
-    state: 'present'
-
+  - name: git
+    state: present
 
 librenms__mariadb_server__databases__dependent_var:
-  - name: '{{ librenms__database_name }}'
-    collation: 'utf8mb4_unicode_ci'
-    encoding: 'utf8mb4'
-    state: 'present'
+  - name: "{{ librenms__database_name }}"
+    collation: utf8mb4_unicode_ci
+    encoding: utf8mb4
+    state: present
 
 librenms__mariadb_server__users__dependent_var:
-  - username: '{{ librenms__database_login.username }}'
-    password: '{{ librenms__database_login.password }}'
-    host: '{{ librenms__database_host }}'
+  - username: "{{ librenms__database_login.username }}"
+    password: "{{ librenms__database_login.password }}"
+    host: "{{ librenms__database_host }}"
     priv:
-      - '{{ librenms__database_name }}.*:ALL'
-    state: 'present'
-
+      - "{{ librenms__database_name }}.*:ALL"
+    state: present
 
 librenms__php__fpm_pools__dependent_var:
-  - name: 'librenms'
-    by_role: 'librenms'
-    user: 'librenms'
-    group: 'librenms'
+  - name: librenms
+    by_role: librenms
+    user: librenms
+    group: librenms
     raw: |-
       env[PATH] = /usr/local/bin:/usr/bin:/bin
 
 librenms__php__modules__dependent_var:
-  - name: 'php-curl'
-    state: 'present'
-  - name: 'php-gd'
-    state: 'present'
-  - name: 'php-json'
-    state: 'present'
-  - name: 'php-ldap'
-    state: 'present'
-  - name: 'php-mbstring'
-    state: 'present'
-  - name: 'php-mysqlnd'
-    state: 'present'
-  - name: 'php-process'
-    state: 'present'
-  - name: 'php-snmp'
-    state: 'present'
-  - name: 'php-xml'
-    state: 'present'
-  - name: 'php-zip'
-    state: 'present'
+  - name: php-curl
+    state: present
+  - name: php-gd
+    state: present
+  - name: php-json
+    state: present
+  - name: php-ldap
+    state: present
+  - name: php-mbstring
+    state: present
+  - name: php-mysqlnd
+    state: present
+  - name: php-process
+    state: present
+  - name: php-snmp
+    state: present
+  - name: php-xml
+    state: present
+  - name: php-zip
+    state: present
 
 librenms__selinux__booleans__dependent_var:
-  - key: 'httpd_can_connect_ldap'
-    value: 'on'
-  - key: 'httpd_setrlimit'
-    value: 'on'
+  - key: httpd_can_connect_ldap
+    value: "on"
+  - key: httpd_setrlimit
+    value: "on"
 librenms__selinux__fcontexcts__dependent_var:
-  - setype: 'httpd_sys_content_t'
-    target: '/opt/librenms/html(/.*)?'
-    state: 'present'
+  - setype: httpd_sys_content_t
+    target: /opt/librenms/html(/.*)?
+    state: present
   # httpd_log_t is required for the logrotate to work
-  - setype: 'httpd_log_t'
-    target: '/opt/librenms/logs(/.*)?'
-    state: 'present'
-  - setype: 'httpd_sys_rw_content_t'
-    target: '/opt/librenms/(rrd|storage)(/.*)?'
-    state: 'present'
-  - setype: 'httpd_sys_rw_content_t'
-    target: '/opt/librenms/.env'
-    state: 'present'
+  - setype: httpd_log_t
+    target: /opt/librenms/logs(/.*)?
+    state: present
+  - setype: httpd_sys_rw_content_t
+    target: /opt/librenms/(rrd|storage)(/.*)?
+    state: present
+  - setype: httpd_sys_rw_content_t
+    target: /opt/librenms/.env
+    state: present

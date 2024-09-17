@@ -3,7 +3,6 @@
     - gitlab_ce
 
   block:
-
     - name: Install gitlab-ce
       ansible.builtin.package:
         name: gitlab-ce
@@ -24,7 +23,6 @@
     - gitlab_ce
     - gitlab_ce:configure
   block:
-
     - name: Mkdir -p /backup/gitlab
       ansible.builtin.file:
         path: /backup/gitlab
